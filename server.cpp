@@ -14,6 +14,9 @@ struct hostservicepair
     char service[32];
     char host[1025];
     char name[50];
+    struct sockaddr_storage addr;
+    socklen_t addr_len;
+
 } hostservicepair;
 
 int main(int argc, char *argv[])
@@ -87,10 +90,6 @@ int main(int argc, char *argv[])
         if (nread == -1)
             continue; /* Ignore failed request */
 
-        struct sockaddr_in curpeer;
-        socklen_t curpeer_len = sizeof(curpeer);
-        int res = getpeername(sfd, (struct sockaddr *)&curpeer, &curpeer_len);
-
         char host[NI_MAXHOST], service[NI_MAXSERV];
 
         s = getnameinfo((struct sockaddr *)&peer_addr,
@@ -108,13 +107,17 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (-1)
+        if (found == -1)
         {
             if (numlogged < 100)
             {
                 strcpy(logged_addr[numlogged].host, host);
                 strcpy(logged_addr[numlogged].service, service);
                 strcpy(logged_addr[numlogged].name, buf);
+                logged_addr[numlogged].name[nread - 1] = '\0';
+
+                logged_addr[numlogged].addr = peer_addr;
+                logged_addr[numlogged].addr_len = peer_addr_len;
             }
             else
             {
@@ -122,12 +125,16 @@ int main(int argc, char *argv[])
                 strcpy(logged_addr[numlogged].host, host);
                 strcpy(logged_addr[numlogged].service, service);
                 strcpy(logged_addr[numlogged].name, buf);
+                logged_addr[numlogged].addr = peer_addr;
+                logged_addr[numlogged].name[nread - 1] = '\0';
+                logged_addr[numlogged].addr_len = peer_addr_len;
             }
             if (s == 0)
                 printf("Received %zd bytes from %s:%s, %s\n",
-                       nread, logged_addr[found].host, logged_addr[found].service, logged_addr[found].name);
+                       nread, logged_addr[numlogged].host, logged_addr[numlogged].service, logged_addr[numlogged].name);
             else
                 fprintf(stderr, "getnameinfo: %s\n", gai_strerror(s));
+
             sprintf(buf, "Client Logged as %s", logged_addr[numlogged].name);
             if (sendto(sfd, buf, strlen(buf), 0,
                        (struct sockaddr *)&peer_addr,
@@ -139,14 +146,27 @@ int main(int argc, char *argv[])
         }
 
         if (s == 0)
-            printf("Received %zd bytes from %s:%s, %s\n",
-                   nread, logged_addr[found].host, logged_addr[found].service, logged_addr[found].name);
+        {
+            //printf("Received %zd bytes from known addr %s:%s, %s\n",
+            //       nread, logged_addr[found].host, logged_addr[found].service, logged_addr[found].name);
+            printf("%s: %s", logged_addr[found].name, buf);
+        }
         else
+        {
             fprintf(stderr, "getnameinfo: %s\n", gai_strerror(s));
+        }
+        buf[nread - 1] = '\0';
 
-        if (sendto(sfd, buf, nread, 0,
-                   (struct sockaddr *)&peer_addr,
-                   peer_addr_len) != nread)
-            fprintf(stderr, "Error sending response\n");
+        for (int i = 0; i < numlogged; i++)
+        {
+            char tmpbuf[500];
+
+            sprintf(tmpbuf, "%s_%s", buf, logged_addr[found].name);
+
+            if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[i].addr, logged_addr[i].addr_len) != strlen(tmpbuf))
+            {
+                fprintf(stderr, "Error sending response\n");
+            }
+        }
     }
 }
