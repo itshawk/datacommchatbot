@@ -1,5 +1,2 @@
-ChatClient/moc_mainwindow.o
-ChatClient/moc_mainwindow.cpp
-ChatClient/Makefile
-ChatClient/client.o
-ChatClient/ChatClient
+ChatClient/generated_files
+
