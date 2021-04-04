@@ -1,2 +1,6 @@
 ChatClient/generated_files
 
+
+*.stash
+
+ChatClient/Makefile
