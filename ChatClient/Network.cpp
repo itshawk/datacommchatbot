@@ -26,17 +26,16 @@ void* Network::receiver()
         if (!setup)
         {
 
-            str.sprintf("Received %zd bytes: %s\n", nread, buf);
+            str.sprintf("Logged in as: %s", buf);
             emit recv(str);
 
-            //printf("Received %zd bytes: %s\n", nread, buf);
             setup = 1;
         }
         else
         {
             //fprintf(stderr, "%s", buf);
             char *msg = strtok(buf, "_");
-            char *name = strtok(NULL, "_");
+            char *name = strtok(nullptr, "_");
             str.sprintf("%s: %s", name, msg);
             emit recv(str);
        
@@ -54,18 +53,6 @@ void Network::sender(QString in)
         return;
 
     strcpy(msg,in.toLocal8Bit().constData());
-    //QLineEdit *lineEdit = w->findChild<QLineEdit *>("lineEdit");
-
-    //printf("Enter your Client Name as the first msg:\n");
-    //QEventLoop loop;
-    //loop.connect(lineEdit, SIGNAL(returnPressed()), SLOT(quit()));
-    //while (loop.exec() == 0)
-    //{
-        //printf("msg: %s\n", msg);
-        //QByteArray ba = lineEdit->displayText().toLocal8Bit();
-        //strcpy(msg, ba.constData());
-       // lineEdit->clear();
-        //printf("msg: %s\n", msg);
 
         if (strcmp(msg, "exit\n") == 0)
         {
@@ -77,8 +64,7 @@ void Network::sender(QString in)
         if (strcmp(msg, "exit\n") == 0)
         {
             
-        }
-        //msg[strlen(msg)] = 0;
+        }    
         len = strlen(msg) + 1;
         /* +1 for terminating null byte */
 
@@ -98,12 +84,8 @@ void Network::sender(QString in)
 
  void Network::initSocket(const char* addr, const char* port)
  {
-    /*  if (signal(SIGSEGV, sig_handler) == SIG_ERR || signal(SIGINT, sig_handler) == SIG_ERR)
-    {
-        fputs("An error occurred while setting a signal handler.\n", stderr);
-        exit(EXIT_FAILURE);
-    } */
-    struct addrinfo hints;
+
+     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int s;
 

@@ -24,7 +24,6 @@ public:
         initSocket(addr, port);
     }
     void *receiver();
-    //void* sender(std::string in);
 private:
     int sfd;
     void initSocket(const char *addr, const char *port);

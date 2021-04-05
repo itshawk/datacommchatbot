@@ -19,11 +19,11 @@ void ConnectUi::on_connectButton_pressed()
 {
     network_ = new Network(ui->addressLine->displayText().toLocal8Bit().constData(),
                             ui->portLine->displayText().toLocal8Bit().constData());
+    network_->sender(ui->usernameLine->displayText());
     MainWindow *mw = new MainWindow();
 
     connect(network_,&Network::recv,
             mw, &MainWindow::uwu);
-
 
     mw->show();
 
@@ -37,9 +37,6 @@ void ConnectUi::on_connectButton_pressed()
     t1.detach();
     hide();
 
-    for(;;)
-    {
-        mw->uwu("Fuckywucky");
-    }
+   
 
 }
