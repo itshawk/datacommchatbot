@@ -43,7 +43,10 @@ int main(int argc, char *argv[])
     hints.ai_canonname = NULL;
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
-
+    /* getaddrinfo() returns a list of address structures.
+              Try each address until we successfully bind(2).
+              If socket(2) (or bind(2)) fails, we (close the socket
+              and) try the next address. */
     s = getaddrinfo(NULL, argv[1], &hints, &result);
     if (s != 0)
     {
@@ -51,10 +54,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /* getaddrinfo() returns a list of address structures.
-              Try each address until we successfully bind(2).
-              If socket(2) (or bind(2)) fails, we (close the socket
-              and) try the next address. */
+   
 
     for (rp = result; rp != NULL; rp = rp->ai_next)
     {

@@ -32,10 +32,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         client.cpp \
-        mainwindow.cpp
+        mainwindow.cpp\
+        main.cpp\
+        ConnectUi.cpp\
+        Network.cpp
+       
+
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h\
+        Network.h\
+    ConnectUi.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui\
+        Connect.ui

@@ -20,7 +20,6 @@ bool blowup = false;
 
 void sig_handler(int signo)
 {
-    int input_int;
     if (signo == SIGSEGV)
     {
         printf("sigsegv\n");
@@ -33,51 +32,9 @@ void sig_handler(int signo)
     return;
 }
 
-void *receiver(int sfd, QTextBrowser *textBrowser)
+void receiver(QString in)
 {
-    char buf[BUF_SIZE];
-    ssize_t nread;
-    bool setup = 0;
-
-    //QPlainTextEdit *plainText = w->findChild<QPlainTextEdit *>("plainTextEdit");
-    QString str;
-
-    while (1)
-    {
-        struct sockaddr_storage peer_addr;
-        socklen_t peer_addr_len;
-        bzero(buf, BUF_SIZE);
-        nread = recvfrom(sfd, buf, BUF_SIZE, 0,
-                         (struct sockaddr *)&peer_addr, &peer_addr_len);
-        if (nread == -1)
-        {
-            perror("read");
-            exit(EXIT_FAILURE);
-        }
-        if (!setup)
-        {
-            str.sprintf("Received %zd bytes: %s\n", nread, buf);
-
-            textBrowser->insertPlainText(str);
-            printf("Received %zd bytes: %s\n", nread, buf);
-            setup = 1;
-        }
-        else
-        {
-            //fprintf(stderr, "%s", buf);
-            char *msg = strtok(buf, "_");
-            char *name = strtok(NULL, "_");
-            str.sprintf("%s: %s", name, msg);
-            textBrowser->append(str);
-            QApplication::processEvents();
-            QCoreApplication::flush();
-            printf("%s: %s\n", name, msg);
-            fflush(stdout);
-        }
-        QApplication::processEvents();
-        QCoreApplication::flush();
-    }
-    return 0;
+    
 }
 
 void *sender(int sfd, MainWindow *w)
@@ -125,15 +82,13 @@ void *sender(int sfd, MainWindow *w)
             fprintf(stderr, "partial/failed write\n");
             exit(EXIT_FAILURE);
         }
-        QApplication::processEvents();
-        QCoreApplication::flush();
     }
     return 0;
 }
 
-int main(int argc, char *argv[])
+int initSocket(const char* addr, const char* port)
 {
-    if (signal(SIGSEGV, sig_handler) == SIG_ERR || signal(SIGINT, sig_handler) == SIG_ERR)
+     if (signal(SIGSEGV, sig_handler) == SIG_ERR || signal(SIGINT, sig_handler) == SIG_ERR)
     {
         fputs("An error occurred while setting a signal handler.\n", stderr);
         return EXIT_FAILURE;
@@ -142,11 +97,11 @@ int main(int argc, char *argv[])
     struct addrinfo *result, *rp;
     int sfd, s;
 
-    if (argc < 3)
+ /*    if (argc < 3)
     {
         fprintf(stderr, "Usage: %s host port msg...\n", argv[0]);
         exit(EXIT_FAILURE);
-    }
+    } */
 
     /* Obtain address(es) matching host/port. */
 
@@ -156,17 +111,16 @@ int main(int argc, char *argv[])
     hints.ai_flags = 0;
     hints.ai_protocol = 0; /* Any protocol */
 
-    s = getaddrinfo(argv[1], argv[2], &hints, &result);
+    /* getaddrinfo() returns a list of address structures.
+              Try each address until we successfully connect(2).
+              If socket(2) (or connect(2)) fails, we (close the socket
+              and) try the next address. */
+    s = getaddrinfo(addr, port, &hints, &result);
     if (s != 0)
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
         exit(EXIT_FAILURE);
     }
-
-    /* getaddrinfo() returns a list of address structures.
-              Try each address until we successfully connect(2).
-              If socket(2) (or connect(2)) fails, we (close the socket
-              and) try the next address. */
 
     for (rp = result; rp != NULL; rp = rp->ai_next)
     {
@@ -174,8 +128,7 @@ int main(int argc, char *argv[])
                      rp->ai_protocol);
         if (sfd == -1)
             continue;
-
-        if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+        if (::connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
             break; /* Success */
 
         close(sfd);
@@ -188,22 +141,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Could not connect\n");
         exit(EXIT_FAILURE);
     }
+    return sfd;
 
-    /* Send remaining command-line arguments as separate
-              datagrams, and read responses from server. */
-
-    //exit(EXIT_SUCCESS);
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    std::thread t1(receiver, sfd, w.findChild<QTextBrowser *>("textBrowser"));
-    std::thread t2(sender, sfd, &w);
-    t1.detach();
-    t2.detach();
-
-    QCoreApplication::exec();
-
-    while (!blowup)
-    {
-    }
 }
+

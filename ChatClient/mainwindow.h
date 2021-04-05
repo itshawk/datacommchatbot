@@ -17,6 +17,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+public slots:
+    void uwu(QString fucky);
+
 };
 
 #endif // MAINWINDOW_H

@@ -1,9 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
+                                          ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 }
@@ -11,4 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::uwu(QString fuckywucky)
+{
+    ui->textBrowser->insertPlainText(fuckywucky+"\n");
 }
