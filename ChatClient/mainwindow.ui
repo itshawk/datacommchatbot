@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTextBrowser" name="textBrowser"/>
+     <widget class="QTextEdit" name="textEdit"/>
     </item>
     <item>
      <widget class="QLineEdit" name="lineEdit"/>

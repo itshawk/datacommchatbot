@@ -43,10 +43,7 @@ int main(int argc, char *argv[])
     hints.ai_canonname = NULL;
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
-    /* getaddrinfo() returns a list of address structures.
-              Try each address until we successfully bind(2).
-              If socket(2) (or bind(2)) fails, we (close the socket
-              and) try the next address. */
+
     s = getaddrinfo(NULL, argv[1], &hints, &result);
     if (s != 0)
     {
@@ -54,7 +51,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-   
+    /* getaddrinfo() returns a list of address structures.
+              Try each address until we successfully bind(2).
+              If socket(2) (or bind(2)) fails, we (close the socket
+              and) try the next address. */
 
     for (rp = result; rp != NULL; rp = rp->ai_next)
     {
@@ -145,6 +145,42 @@ int main(int argc, char *argv[])
             continue;
         }
 
+        if (buf[0] == '/')
+        {
+            char tmpbuf[500];
+
+            if (buf[1] == 'w')
+            {
+                fprintf(stderr, "recipient msg: %s\n", strtok(buf, " "));
+                char *recipient = strtok(nullptr, " ");
+                fprintf(stderr, "recipient: %s\n", recipient);
+
+                char *msg = strtok(nullptr, "");
+                fprintf(stderr, "msg: %s\n", msg);
+                sprintf(tmpbuf, "w(Whisper From %s) %s", logged_addr[found].name, msg);
+                fprintf(stderr, "tmpbuf: %s\n", tmpbuf);
+                for (int i = 0; i <= numlogged; i++)
+                {
+                    if (strcmp(logged_addr[i].name, recipient) == 0)
+                    {
+                        printf("found recipient");
+                        if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[i].addr, logged_addr[i].addr_len) != strlen(tmpbuf))
+                        {
+                            fprintf(stderr, "Error sending response\n");
+                        }
+                        bzero(tmpbuf, strlen(tmpbuf));
+                        sprintf(tmpbuf, "w(Whisper To %s) %s", logged_addr[i].name, msg);
+                        if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[found].addr, logged_addr[found].addr_len) != strlen(tmpbuf))
+                        {
+                            fprintf(stderr, "Error sending response\n");
+                        }
+                        break;
+                    }
+                }
+            }
+            continue;
+        }
+
         if (s == 0)
         {
             //printf("Received %zd bytes from known addr %s:%s, %s\n",
@@ -161,7 +197,7 @@ int main(int argc, char *argv[])
         {
             char tmpbuf[500];
 
-            sprintf(tmpbuf, "%s_%s", buf, logged_addr[found].name);
+            sprintf(tmpbuf, "m%s_%s", buf, logged_addr[found].name);
 
             if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[i].addr, logged_addr[i].addr_len) != strlen(tmpbuf))
             {

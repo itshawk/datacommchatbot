@@ -24,6 +24,7 @@ public:
         initSocket(addr, port);
     }
     void *receiver();
+
 private:
     int sfd;
     void initSocket(const char *addr, const char *port);
@@ -33,4 +34,3 @@ public slots:
 signals:
     void recv(QString in);
 };
-

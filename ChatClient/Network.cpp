@@ -1,8 +1,8 @@
 #include "Network.h"
 
-#include<QEventLoop>
+#include <QEventLoop>
 
-void* Network::receiver()
+void *Network::receiver()
 {
     char buf[BUF_SIZE];
     ssize_t nread;
@@ -33,14 +33,27 @@ void* Network::receiver()
         }
         else
         {
-            //fprintf(stderr, "%s", buf);
-            char *msg = strtok(buf, "_");
-            char *name = strtok(nullptr, "_");
-            str.sprintf("%s: %s", name, msg);
+            printf("%c\n", buf[0]);
+            if (buf[0] == 'm')
+            {
+                //fprintf(stderr, "%s", buf);
+                char *tmpbuf = strchr(buf, 'm') + 1;
+                printf("tmpbuf_m: %s\n", tmpbuf);
+                char *msg = strtok(tmpbuf, "_");
+                char *name = strtok(nullptr, "_");
+                str.sprintf("%s: %s", name, msg);
+                printf("%s: %s\n", name, msg);
+                fflush(stdout);
+            }
+            else if (buf[0] == 'w')
+            {
+                char *msg = strchr(buf, 'w') + 1;
+                printf("msg: %s\n", msg);
+
+                str.sprintf("%s", msg);
+                printf("%s\n", msg);
+            }
             emit recv(str);
-       
-            printf("%s: %s\n", name, msg);
-            fflush(stdout);
         }
     }
 }
@@ -49,47 +62,46 @@ void Network::sender(QString in)
     char msg[200];
     int len;
 
-    if(in.size() > MSG_LENGTH)
+    if (in.size() > MSG_LENGTH)
         return;
 
-    strcpy(msg,in.toLocal8Bit().constData());
+    strcpy(msg, in.toLocal8Bit().constData());
 
-        if (strcmp(msg, "exit\n") == 0)
-        {
-           return;
-        }
-        printf("\033[A\33[2KT\r");
-        printf("*");
-        fflush(stdout);
-        if (strcmp(msg, "exit\n") == 0)
-        {
-            
-        }    
-        len = strlen(msg) + 1;
-        /* +1 for terminating null byte */
+    if (strcmp(msg, "exit\n") == 0)
+    {
+        return;
+    }
+    //printf("\033[A\33[2KT\r");
+    //printf("*");
+    fflush(stdout);
+    if (strcmp(msg, "exit\n") == 0)
+    {
+    }
+    len = strlen(msg) + 1;
+    /* +1 for terminating null byte */
 
-        if (len > BUF_SIZE)
-        {
-            fprintf(stderr,
-                    "Ignoring long message in argument\n");
-        }
+    if (len > BUF_SIZE)
+    {
+        fprintf(stderr,
+                "Ignoring long message in argument\n");
+    }
 
-        if (write(sfd, msg, len) != len)
-        {
-            fprintf(stderr, "partial/failed write\n");
-            exit(EXIT_FAILURE);
-        }
+    if (write(sfd, msg, len) != len)
+    {
+        fprintf(stderr, "partial/failed write\n");
+        exit(EXIT_FAILURE);
+    }
     //}
 }
 
- void Network::initSocket(const char* addr, const char* port)
- {
+void Network::initSocket(const char *addr, const char *port)
+{
 
-     struct addrinfo hints;
+    struct addrinfo hints;
     struct addrinfo *result, *rp;
     int s;
 
- /*    if (argc < 3)
+    /*    if (argc < 3)
     {
         fprintf(stderr, "Usage: %s host port msg...\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -134,5 +146,4 @@ void Network::sender(QString in)
         fprintf(stderr, "Could not connect\n");
         exit(EXIT_FAILURE);
     }
-    
- }
+}
