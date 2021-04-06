@@ -10,3 +10,5 @@ ChatClient/Makefile
 build-ChatClient-Desktop-Debug/generated_files/
 
 build-ChatClient-Desktop-Debug/
+
+ChatClient/ChatClient.pro.user
