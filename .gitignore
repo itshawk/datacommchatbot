@@ -6,3 +6,7 @@ ChatClient/generated_files
 ChatClient/Makefile
 
 .vscode/
+
+build-ChatClient-Desktop-Debug/generated_files/
+
+build-ChatClient-Desktop-Debug/

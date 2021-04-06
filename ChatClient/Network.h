@@ -19,18 +19,18 @@ private:
     int MSG_LENGTH = 200;
 
 public:
-    Network(const char *addr, const char *port)
-    {
-        initSocket(addr, port);
-    }
-    void *receiver();
+    Network(){}
+    void Start(const char *addr, const char *port);
+    void receiver();
 
 private:
     int sfd;
     void initSocket(const char *addr, const char *port);
+    bool running = false;
 
 public slots:
     void sender(QString in);
 signals:
     void recv(QString in);
+    void error();
 };

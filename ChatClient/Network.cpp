@@ -2,8 +2,15 @@
 
 #include <QEventLoop>
 
-void *Network::receiver()
+void Network::Start(const char *addr, const char *port)
 {
+    initSocket(addr,port);
+}
+void Network::receiver()
+{
+    if(!running)
+        return ;
+
     char buf[BUF_SIZE];
     ssize_t nread;
     bool setup = 0;
@@ -59,6 +66,9 @@ void *Network::receiver()
 }
 void Network::sender(QString in)
 {
+
+    if(!running)
+        return;
     char msg[200];
     int len;
 
@@ -74,11 +84,8 @@ void Network::sender(QString in)
     //printf("\033[A\33[2KT\r");
     //printf("*");
     fflush(stdout);
-    if (strcmp(msg, "exit\n") == 0)
-    {
-    }
     len = strlen(msg) + 1;
-    /* +1 for terminating null byte */
+    /* +1 for terminating nullptrptr byte */
 
     if (len > BUF_SIZE)
     {
@@ -122,11 +129,12 @@ void Network::initSocket(const char *addr, const char *port)
     s = getaddrinfo(addr, port, &hints, &result);
     if (s != 0)
     {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-        exit(EXIT_FAILURE);
+        //fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+        emit error();
+        return;
     }
 
-    for (rp = result; rp != NULL; rp = rp->ai_next)
+    for (rp = result; rp != nullptr; rp = rp->ai_next)
     {
         sfd = socket(rp->ai_family, rp->ai_socktype,
                      rp->ai_protocol);
@@ -134,16 +142,21 @@ void Network::initSocket(const char *addr, const char *port)
             continue;
 
         if (::connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+        {
+            running = true;
             break; /* Success */
+        }
 
         close(sfd);
     }
 
     freeaddrinfo(result); /* No longer needed */
 
-    if (rp == NULL)
+    if (rp == nullptr)
     { /* No address succeeded */
-        fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        emit error();
+        //exit(EXIT_FAILURE);
     }
+
+
 }

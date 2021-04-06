@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Connect.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.11.3
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,14 +10,12 @@
 #define UI_CONNECT_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QFormLayout>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -25,50 +23,62 @@ QT_BEGIN_NAMESPACE
 class Ui_ConnectUi
 {
 public:
-    QWidget *layoutWidget;
-    QFormLayout *formLayout;
+    QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
     QLineEdit *addressLine;
     QLineEdit *portLine;
-    QPushButton *connectButton;
     QLineEdit *usernameLine;
+    QHBoxLayout *horizontalLayout_2;
+    QPushButton *connectButton;
+    QLabel *errorLabel;
 
     void setupUi(QWidget *ConnectUi)
     {
         if (ConnectUi->objectName().isEmpty())
             ConnectUi->setObjectName(QStringLiteral("ConnectUi"));
         ConnectUi->resize(334, 117);
-        layoutWidget = new QWidget(ConnectUi);
-        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(20, 20, 282, 85));
-        formLayout = new QFormLayout(layoutWidget);
-        formLayout->setObjectName(QStringLiteral("formLayout"));
-        formLayout->setContentsMargins(0, 0, 0, 0);
+        verticalLayout = new QVBoxLayout(ConnectUi);
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        addressLine = new QLineEdit(layoutWidget);
+        addressLine = new QLineEdit(ConnectUi);
         addressLine->setObjectName(QStringLiteral("addressLine"));
 
         horizontalLayout->addWidget(addressLine);
 
-        portLine = new QLineEdit(layoutWidget);
+        portLine = new QLineEdit(ConnectUi);
         portLine->setObjectName(QStringLiteral("portLine"));
 
         horizontalLayout->addWidget(portLine);
 
 
-        formLayout->setLayout(0, QFormLayout::LabelRole, horizontalLayout);
+        verticalLayout->addLayout(horizontalLayout);
 
-        connectButton = new QPushButton(layoutWidget);
-        connectButton->setObjectName(QStringLiteral("connectButton"));
-
-        formLayout->setWidget(2, QFormLayout::LabelRole, connectButton);
-
-        usernameLine = new QLineEdit(layoutWidget);
+        usernameLine = new QLineEdit(ConnectUi);
         usernameLine->setObjectName(QStringLiteral("usernameLine"));
 
-        formLayout->setWidget(1, QFormLayout::SpanningRole, usernameLine);
+        verticalLayout->addWidget(usernameLine);
 
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        connectButton = new QPushButton(ConnectUi);
+        connectButton->setObjectName(QStringLiteral("connectButton"));
+
+        horizontalLayout_2->addWidget(connectButton);
+
+        errorLabel = new QLabel(ConnectUi);
+        errorLabel->setObjectName(QStringLiteral("errorLabel"));
+        errorLabel->setStyleSheet(QStringLiteral("QLabel { color : red; }"));
+        errorLabel->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_2->addWidget(errorLabel);
+
+
+        verticalLayout->addLayout(horizontalLayout_2);
+
+        QWidget::setTabOrder(addressLine, portLine);
+        QWidget::setTabOrder(portLine, usernameLine);
+        QWidget::setTabOrder(usernameLine, connectButton);
 
         retranslateUi(ConnectUi);
 
@@ -77,13 +87,14 @@ public:
 
     void retranslateUi(QWidget *ConnectUi)
     {
-        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Form", Q_NULLPTR));
+        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Form", nullptr));
         addressLine->setInputMask(QString());
         addressLine->setText(QString());
-        addressLine->setPlaceholderText(QApplication::translate("ConnectUi", "Address", Q_NULLPTR));
-        portLine->setPlaceholderText(QApplication::translate("ConnectUi", "Port", Q_NULLPTR));
-        connectButton->setText(QApplication::translate("ConnectUi", "Connect", Q_NULLPTR));
-        usernameLine->setPlaceholderText(QApplication::translate("ConnectUi", "Username", Q_NULLPTR));
+        addressLine->setPlaceholderText(QApplication::translate("ConnectUi", "Address", nullptr));
+        portLine->setPlaceholderText(QApplication::translate("ConnectUi", "Port", nullptr));
+        usernameLine->setPlaceholderText(QApplication::translate("ConnectUi", "Username", nullptr));
+        connectButton->setText(QApplication::translate("ConnectUi", "Connect", nullptr));
+        errorLabel->setText(QApplication::translate("ConnectUi", "Failed to connect!", nullptr));
     } // retranslateUi
 
 };

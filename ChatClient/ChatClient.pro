@@ -31,7 +31,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        client.cpp \
         mainwindow.cpp\
         main.cpp\
         ConnectUi.cpp\

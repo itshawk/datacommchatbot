@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <ui_Connect.h>
 #include "Network.h"
+#include <mainwindow.h>
 namespace Ui {
     class ConnectUi;
     }
@@ -19,11 +20,11 @@ public:
     
 private:
     Ui::ConnectUi *ui;
-
+    MainWindow *mainUi;
     Network *network_; 
 public slots:
     void on_connectButton_pressed();
-
+    void showErrorLabel();
 };
 
 #endif // MAINWINDOW_H
