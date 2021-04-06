@@ -2,13 +2,35 @@
 #include "ui_Connect.h"
 #include <thread>
 #include <iostream>
-
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFile>
 ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
                                         ui(new Ui::ConnectUi)
 {
     ui->setupUi(this);
     ui->errorLabel->setVisible(false);
     mainUi = new MainWindow();
+
+    //Create the network and add error handling before starting
+    network_ = new Network();
+    connect(network_,&Network::error,
+            this,&ConnectUi::showErrorLabel);
+
+    //Handle enter on username tb
+    connect(ui->usernameLine,&QLineEdit::returnPressed,
+            this,&ConnectUi::on_connectButton_pressed);
+
+    //Load last connection
+    if(loadLast())
+    {
+        ui->addressLine->setText(loginDetails.Address);
+        ui->portLine->setText(loginDetails.Port);
+        ui->usernameLine->setText(loginDetails.Username);
+        loaded = true;
+    }
+
+
 }
 
 ConnectUi::~ConnectUi()
@@ -21,23 +43,32 @@ void ConnectUi::on_connectButton_pressed()
     //clear scuffed bool
     ui->errorLabel->setVisible(false);
 
-    //Create the network and add error handling before starting
-    network_ = new Network();
-    connect(network_,&Network::error,
-            this,&ConnectUi::showErrorLabel);
+    //If we dont load a file, store the tb data in the struct
+    if(!loaded)
+    {
+        loginDetails.Address = ui->addressLine->displayText();
+        loginDetails.Port = ui->portLine->displayText();
+        loginDetails.Username = ui->usernameLine->text();
+    }
+
+    //Save last login to disk
+    saveLast();
 
     //init the socket
-    network_->Start(ui->addressLine->displayText().toLocal8Bit().constData(),
-                    ui->portLine->displayText().toLocal8Bit().constData());
+    network_->Start(loginDetails.Address.toLocal8Bit().constData(),
+                    loginDetails.Port.toLocal8Bit().constData());
 
     //Check scuffed bool
     if(ui->errorLabel->isVisible())
         return;
 
+    //Setup reciver handler
     connect(network_,&Network::recv,
             mainUi, &MainWindow::uwu);
 
-    network_->sender(ui->usernameLine->text());
+    //Scuffed username handling
+    network_->sender(loginDetails.Username);
+
     mainUi->show();
 
 
@@ -45,11 +76,48 @@ void ConnectUi::on_connectButton_pressed()
     connect(mwle,&QLineEdit::returnPressed,
             network_,[=]{network_->sender(mwle->text());mwle->clear();});
 
+
     std::thread t1(&Network::receiver, std::ref(network_));
     t1.detach();
     hide();
 
    
+
+}
+
+void ConnectUi::saveLast()
+{
+
+    QJsonObject obj ;
+    obj["Address"] = loginDetails.Address;
+    obj["Port"] = loginDetails.Port;
+    obj["Username"] = loginDetails.Username;
+
+    QFile save(fileName);
+    save.open(QIODevice::WriteOnly);
+    save.write(QJsonDocument(obj).toJson());
+    save.close();
+
+
+}
+bool ConnectUi::loadLast()
+{
+
+    QFile loadfile(fileName);
+    loadfile.open(QIODevice::ReadOnly);
+
+    auto fileIn = loadfile.readAll();
+    if(fileIn.size() <= 0)
+        return false;
+
+    auto loadJDoc = QJsonDocument::fromJson(fileIn);
+    auto jobj = loadJDoc.object();
+
+    loginDetails.Address = jobj["Address"].toString();
+    loginDetails.Port = jobj["Port"].toString();
+    loginDetails.Username = jobj["Username"].toString();
+
+    return true;
 
 }
 
