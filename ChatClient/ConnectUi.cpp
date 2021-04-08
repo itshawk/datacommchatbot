@@ -14,23 +14,21 @@ ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
 
     //Create the network and add error handling before starting
     network_ = new Network();
-    connect(network_,&Network::error,
-            this,&ConnectUi::showErrorLabel);
+    connect(network_, &Network::error,
+            this, &ConnectUi::showErrorLabel);
 
     //Handle enter on username tb
-    connect(ui->usernameLine,&QLineEdit::returnPressed,
-            this,&ConnectUi::on_connectButton_pressed);
+    connect(ui->usernameLine, &QLineEdit::returnPressed,
+            this, &ConnectUi::on_connectButton_pressed);
 
     //Load last connection
-    if(loadLast())
+    if (loadLast())
     {
         ui->addressLine->setText(loginDetails.Address);
         ui->portLine->setText(loginDetails.Port);
         ui->usernameLine->setText(loginDetails.Username);
         loaded = true;
     }
-
-
 }
 
 ConnectUi::~ConnectUi()
@@ -44,51 +42,49 @@ void ConnectUi::on_connectButton_pressed()
     ui->errorLabel->setVisible(false);
 
     //If we dont load a file, store the tb data in the struct
-    if(!loaded)
-    {
-        loginDetails.Address = ui->addressLine->displayText();
-        loginDetails.Port = ui->portLine->displayText();
-        loginDetails.Username = ui->usernameLine->text();
-    }
+    //just save everytime? or we can catch event for textChanged
+    //but need to resave otherwise its perma stuck after ur first
+    //login
+    // if (!loaded)
+    // {
+    loginDetails.Address = ui->addressLine->displayText();
+    loginDetails.Port = ui->portLine->displayText();
+    loginDetails.Username = ui->usernameLine->displayText();
+    // }
 
     //Save last login to disk
     saveLast();
 
     //init the socket
-    network_->Start(loginDetails.Address.toLocal8Bit().constData(),
-                    loginDetails.Port.toLocal8Bit().constData());
+    network_->Start(ui->addressLine->displayText().toLocal8Bit().constData(),
+                    ui->portLine->displayText().toLocal8Bit().constData());
 
     //Check scuffed bool
-    if(ui->errorLabel->isVisible())
+    if (ui->errorLabel->isVisible())
         return;
 
     //Setup reciver handler
-    connect(network_,&Network::recv,
+    connect(network_, &Network::recv,
             mainUi, &MainWindow::insertText);
 
     //Scuffed username handling
-    network_->sender(loginDetails.Username);
+    network_->sender(ui->usernameLine->displayText().toLocal8Bit().constData());
 
     mainUi->show();
 
-
-    auto mwle = mainUi->findChild<QLineEdit*>("lineEdit");
-    connect(mwle,&QLineEdit::returnPressed,
-            network_,[=]{network_->sender(mwle->text());mwle->clear();});
-
+    auto mwle = mainUi->findChild<QLineEdit *>("lineEdit");
+    connect(mwle, &QLineEdit::returnPressed,
+            network_, [=] {network_->sender(mwle->text());mwle->clear(); });
 
     std::thread t1(&Network::receiver, std::ref(network_));
     t1.detach();
     hide();
-
-   
-
 }
 
 void ConnectUi::saveLast()
 {
 
-    QJsonObject obj ;
+    QJsonObject obj;
     obj["Address"] = loginDetails.Address;
     obj["Port"] = loginDetails.Port;
     obj["Username"] = loginDetails.Username;
@@ -97,8 +93,6 @@ void ConnectUi::saveLast()
     save.open(QIODevice::WriteOnly);
     save.write(QJsonDocument(obj).toJson());
     save.close();
-
-
 }
 bool ConnectUi::loadLast()
 {
@@ -107,7 +101,7 @@ bool ConnectUi::loadLast()
     loadfile.open(QIODevice::ReadOnly);
 
     auto fileIn = loadfile.readAll();
-    if(fileIn.size() <= 0)
+    if (fileIn.size() <= 0)
         return false;
 
     auto loadJDoc = QJsonDocument::fromJson(fileIn);
@@ -118,7 +112,6 @@ bool ConnectUi::loadLast()
     loginDetails.Username = jobj["Username"].toString();
 
     return true;
-
 }
 
 void ConnectUi::showErrorLabel()
