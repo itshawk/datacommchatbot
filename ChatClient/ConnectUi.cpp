@@ -41,23 +41,20 @@ void ConnectUi::on_connectButton_pressed()
     //clear scuffed bool
     ui->errorLabel->setVisible(false);
 
-    //If we dont load a file, store the tb data in the struct
-    //just save everytime? or we can catch event for textChanged
-    //but need to resave otherwise its perma stuck after ur first
-    //login
-    // if (!loaded)
-    // {
-    loginDetails.Address = ui->addressLine->displayText();
-    loginDetails.Port = ui->portLine->displayText();
-    loginDetails.Username = ui->usernameLine->displayText();
-    // }
+    //if user changed lines update file
+    if (ui->addressLine->isModified() || ui->portLine->isModified() || ui->usernameLine->isModified())
+    {
+        loginDetails.Address = ui->addressLine->displayText();
+        loginDetails.Port = ui->portLine->displayText();
+        loginDetails.Username = ui->usernameLine->displayText();
+    }
 
     //Save last login to disk
     saveLast();
 
     //init the socket
-    network_->Start(ui->addressLine->displayText().toLocal8Bit().constData(),
-                    ui->portLine->displayText().toLocal8Bit().constData());
+    network_->Start(loginDetails.Address.toLocal8Bit().constData(),
+                    loginDetails.Port.toLocal8Bit().constData());
 
     //Check scuffed bool
     if (ui->errorLabel->isVisible())
@@ -68,7 +65,7 @@ void ConnectUi::on_connectButton_pressed()
             mainUi, &MainWindow::insertText);
 
     //Scuffed username handling
-    network_->sender(ui->usernameLine->displayText().toLocal8Bit().constData());
+    network_->sender(loginDetails.Username.toLocal8Bit().constData());
 
     mainUi->show();
 
