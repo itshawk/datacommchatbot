@@ -12,7 +12,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::uwu(QString fuckywucky)
+void MainWindow::insertText(QString txt)
 {
-    ui->textEdit->insertPlainText(fuckywucky + "\n");
+    ui->textEdit->insertPlainText(txt + "\n");
 }

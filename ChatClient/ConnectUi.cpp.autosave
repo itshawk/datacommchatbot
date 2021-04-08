@@ -50,7 +50,6 @@ void ConnectUi::on_connectButton_pressed()
         loginDetails.Port = ui->portLine->displayText();
         loginDetails.Username = ui->usernameLine->text();
     }
-
     //Save last login to disk
     saveLast();
 

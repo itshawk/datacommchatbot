@@ -19,7 +19,8 @@ private:
     Ui::MainWindow *ui;
 
 public slots:
-    void uwu(QString fucky);
+    //Appends text to textEdit
+    void insertText(QString txt);
 
 };
 

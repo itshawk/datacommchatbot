@@ -22,10 +22,5 @@ int main(int argc, char *argv[])
     ConnectUi c;
     c.show();
 
-  /*   MainWindow w;
-    w.show();
-    c.ui->addressLine->displayText().toLocal8Bit().constData() */
-  
-
     a.exec();
 }
