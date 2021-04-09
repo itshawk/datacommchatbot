@@ -32,5 +32,5 @@ public slots:
     void sender(QString in);
 signals:
     void recv(QString in);
-    void error();
+    void error(QString err);
 };

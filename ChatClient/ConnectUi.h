@@ -37,7 +37,7 @@ private:
 
 public slots:
     void on_connectButton_pressed();
-    void showErrorLabel();
+    void showErrorLabel(QString err);
 };
 
 #endif // MAINWINDOW_H

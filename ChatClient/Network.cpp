@@ -6,6 +6,7 @@ void Network::Start(const char *addr, const char *port)
 {
     initSocket(addr,port);
 }
+
 void Network::receiver()
 {
     if(!running)
@@ -27,6 +28,7 @@ void Network::receiver()
                          (struct sockaddr *)&peer_addr, &peer_addr_len);
         if (nread == -1)
         {
+            //TODO: This need better handling
             perror("read");
             exit(EXIT_FAILURE);
         }
@@ -95,8 +97,7 @@ void Network::sender(QString in)
 
     if (write(sfd, msg, len) != len)
     {
-        fprintf(stderr, "partial/failed write\n");
-        exit(EXIT_FAILURE);
+        emit error("partial/failed write");
     }
     //}
 }
@@ -130,7 +131,7 @@ void Network::initSocket(const char *addr, const char *port)
     if (s != 0)
     {
         //fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-        emit error();
+        emit error(gai_strerror(s));
         return;
     }
 
@@ -154,7 +155,7 @@ void Network::initSocket(const char *addr, const char *port)
 
     if (rp == nullptr)
     { /* No address succeeded */
-        emit error();
+        emit error("No address succeeded");
         //exit(EXIT_FAILURE);
     }
 

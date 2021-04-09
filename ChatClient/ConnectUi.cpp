@@ -48,7 +48,6 @@ void ConnectUi::on_connectButton_pressed()
         loginDetails.Port = ui->portLine->displayText();
         loginDetails.Username = ui->usernameLine->displayText();
     }
-
     //Save last login to disk
     saveLast();
 
@@ -64,18 +63,27 @@ void ConnectUi::on_connectButton_pressed()
     connect(network_, &Network::recv,
             mainUi, &MainWindow::insertText);
 
+
     //Scuffed username handling
     network_->sender(loginDetails.Username.toLocal8Bit().constData());
-
-    mainUi->show();
 
     auto mwle = mainUi->findChild<QLineEdit *>("lineEdit");
     connect(mwle, &QLineEdit::returnPressed,
             network_, [=] {network_->sender(mwle->text());mwle->clear(); });
 
+
+    //Check scuffed bool
+    if (ui->errorLabel->isVisible())
+        return;
+
+
     std::thread t1(&Network::receiver, std::ref(network_));
     t1.detach();
+
+
     hide();
+    mainUi->show();
+
 }
 
 void ConnectUi::saveLast()
@@ -86,11 +94,12 @@ void ConnectUi::saveLast()
     obj["Port"] = loginDetails.Port;
     obj["Username"] = loginDetails.Username;
 
-    QFile save(fileName);
-    save.open(QIODevice::WriteOnly);
-    save.write(QJsonDocument(obj).toJson());
-    save.close();
+    QFile saveFile(fileName);
+    saveFile.open(QIODevice::WriteOnly);
+    saveFile.write(QJsonDocument(obj).toJson());
+    saveFile.close();
 }
+
 bool ConnectUi::loadLast()
 {
 
@@ -111,7 +120,8 @@ bool ConnectUi::loadLast()
     return true;
 }
 
-void ConnectUi::showErrorLabel()
+void ConnectUi::showErrorLabel(QString err)
 {
+    ui->errorLabel->setText(err);
     ui->errorLabel->setVisible(true);
 }
