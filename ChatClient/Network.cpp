@@ -119,7 +119,7 @@ void Network::initSocket(const char *addr, const char *port)
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
+    hints.ai_socktype = SOCK_STREAM; /* tcp */
     hints.ai_flags = 0;
     hints.ai_protocol = 0; /* Any protocol */
 
