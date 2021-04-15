@@ -1,7 +1,6 @@
 #include "Network.h"
 
-#include <QEventLoop>
-
+#include <QApplication>
 void Network::Start(const char *addr, const char *port)
 {
     initSocket(addr, port);
@@ -9,6 +8,7 @@ void Network::Start(const char *addr, const char *port)
 
 void Network::receiver()
 {
+
     if (!running)
         return;
 
@@ -34,12 +34,14 @@ void Network::receiver()
         if (nread == 0)
         {
             perror("we outtie server died on purpose");
-            exit(EXIT_FAILURE);
+            // this sigsegv's occasionally probably cause threads were doing stuff
+            // qt shutdown or something mybe? doesnt matter since we wanan die here anyway
+            exit(EXIT_SUCCESS);
         }
         if (!setup)
         {
 
-            str.sprintf("Logged in as: %s", buf);
+            str.sprintf("mLogged in as: %s", buf);
             emit recv(str);
 
             setup = 1;
@@ -54,7 +56,7 @@ void Network::receiver()
                 printf("tmpbuf_m: %s\n", tmpbuf);
                 char *msg = strtok(tmpbuf, "_");
                 char *name = strtok(nullptr, "_");
-                str.sprintf("%s: %s", name, msg);
+                str.sprintf("m%s: %s", name, msg);
                 printf("%s: %s\n", name, msg);
                 fflush(stdout);
             }
@@ -63,10 +65,16 @@ void Network::receiver()
                 char *msg = strchr(buf, 'w') + 1;
                 printf("msg: %s\n", msg);
 
-                str.sprintf("%s", msg);
+                str.sprintf("w%s", msg);
                 printf("%s\n", msg);
             }
             else if (buf[0] == 'c')
+            {
+                printf("msg: %s\n", buf);
+
+                str.sprintf("%s", buf);
+            }
+            else if (buf[0] == 'r')
             {
                 printf("msg: %s\n", buf);
 
@@ -89,10 +97,6 @@ void Network::sender(QString in)
 
     strcpy(msg, in.toLocal8Bit().constData());
 
-    if (strcmp(msg, "exit\n") == 0)
-    {
-        return;
-    }
     //printf("\033[A\33[2KT\r");
     //printf("*");
     fflush(stdout);
@@ -109,7 +113,11 @@ void Network::sender(QString in)
     {
         emit error("partial/failed write");
     }
-
+    if (strcmp(msg, "exit\n") == 0)
+    {
+        QApplication::quit();
+        exit(EXIT_SUCCESS);
+    }
     // if (strcmp(msg, "exit") == 0)
     // {
     //     close(sfd);

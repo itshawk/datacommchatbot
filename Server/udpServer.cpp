@@ -21,7 +21,7 @@ struct connectionnamepair
 struct connectionnamepair connections[MAX_CONNECTIONS];
 int numConnections = 0;
 
-void sendToAll(char *buf, int mode) // mode 1 == message, 3 == client log
+void sendToAll(char *buf, int mode) // mode 1 == message, 2 == remove from list, 3 == client log
 {
     char tmpbuf[BUF_SIZE];
     if (mode == 1)
@@ -30,7 +30,7 @@ void sendToAll(char *buf, int mode) // mode 1 == message, 3 == client log
     }
     else if (mode == 2)
     {
-        sprintf(tmpbuf, "w%s", buf);
+        sprintf(tmpbuf, "r%s", buf);
     }
     else if (mode == 3)
     {
@@ -75,12 +75,19 @@ void *handle(void *con)
 
     // correction this works, i dont know what i changhed im scared to
     // ctrl-z to find the difference so we are keeping it like this
+    // also theoretically need to lock pthread access on numconnections
+    // and connections when editing them and using them
+    // struct with mutex in it should be enough
     for (int i = 0; i < numConnections - 1; i++)
     {
         sprintf(buf, "c%s", connections[i].name);
-        if (!send(*connection->socket, buf, sizeof(buf), 0))
+        fprintf(stderr, "existing username %d: %s\n", i, buf);
+        if (*connections[i].socket != -1)
         {
-            fprintf(stderr, "Error sending response\n");
+            if (!send(*connection->socket, buf, sizeof(buf), 0))
+            {
+                fprintf(stderr, "Error sending response\n");
+            }
         }
     }
     while (1)
@@ -93,7 +100,17 @@ void *handle(void *con)
         // send msg to everyone to remove here prob
         if (strcmp(buf, "exit") == 0)
         {
+            sendToAll(connection->name, 2);
             close(*connection->socket);
+
+            for (int i = 0; i < numConnections; i++)
+            {
+
+                if (strcmp(connections[i].name, connection->name) == 0)
+                {
+                    *connections[i].socket = -1;
+                }
+            }
             return 0;
         }
         char tmpbuf[BUF_SIZE];

@@ -47,7 +47,7 @@ public:
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         listWidget = new QListWidget(centralWidget);
         listWidget->setObjectName(QStringLiteral("listWidget"));
-        listWidget->setMaximumSize(QSize(50, 16777215));
+        listWidget->setMaximumSize(QSize(75, 16777215));
 
         horizontalLayout->addWidget(listWidget);
 
