@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Connect.ui'
 **
-** Created by: Qt User Interface Compiler version 5.11.3
+** Created by: Qt User Interface Compiler version 5.9.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,8 +10,11 @@
 #define UI_CONNECT_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
@@ -87,14 +90,14 @@ public:
 
     void retranslateUi(QWidget *ConnectUi)
     {
-        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Form", nullptr));
+        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Form", Q_NULLPTR));
         addressLine->setInputMask(QString());
         addressLine->setText(QString());
-        addressLine->setPlaceholderText(QApplication::translate("ConnectUi", "Address", nullptr));
-        portLine->setPlaceholderText(QApplication::translate("ConnectUi", "Port", nullptr));
-        usernameLine->setPlaceholderText(QApplication::translate("ConnectUi", "Username", nullptr));
-        connectButton->setText(QApplication::translate("ConnectUi", "Connect", nullptr));
-        errorLabel->setText(QApplication::translate("ConnectUi", "Failed to connect!", nullptr));
+        addressLine->setPlaceholderText(QApplication::translate("ConnectUi", "Address", Q_NULLPTR));
+        portLine->setPlaceholderText(QApplication::translate("ConnectUi", "Port", Q_NULLPTR));
+        usernameLine->setPlaceholderText(QApplication::translate("ConnectUi", "Username", Q_NULLPTR));
+        connectButton->setText(QApplication::translate("ConnectUi", "Connect", Q_NULLPTR));
+        errorLabel->setText(QApplication::translate("ConnectUi", "Failed to connect!", Q_NULLPTR));
     } // retranslateUi
 
 };

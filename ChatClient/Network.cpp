@@ -4,13 +4,13 @@
 
 void Network::Start(const char *addr, const char *port)
 {
-    initSocket(addr,port);
+    initSocket(addr, port);
 }
 
 void Network::receiver()
 {
-    if(!running)
-        return ;
+    if (!running)
+        return;
 
     char buf[BUF_SIZE];
     ssize_t nread;
@@ -21,15 +21,19 @@ void Network::receiver()
 
     while (1)
     {
-        struct sockaddr_storage peer_addr;
-        socklen_t peer_addr_len;
         bzero(buf, BUF_SIZE);
-        nread = recvfrom(sfd, buf, BUF_SIZE, 0,
-                         (struct sockaddr *)&peer_addr, &peer_addr_len);
+        nread = ::recv(sfd, buf, sizeof(buf), 0);
+        printf("buf: %s\n", buf);
         if (nread == -1)
         {
             //TODO: This need better handling
             perror("read");
+            exit(EXIT_FAILURE);
+        }
+        // 0 bytes returned on tcp means server shutdown orderly
+        if (nread == 0)
+        {
+            perror("we outtie server died on purpose");
             exit(EXIT_FAILURE);
         }
         if (!setup)
@@ -62,6 +66,12 @@ void Network::receiver()
                 str.sprintf("%s", msg);
                 printf("%s\n", msg);
             }
+            else if (buf[0] == 'c')
+            {
+                printf("msg: %s\n", buf);
+
+                str.sprintf("%s", buf);
+            }
             emit recv(str);
         }
     }
@@ -69,7 +79,7 @@ void Network::receiver()
 void Network::sender(QString in)
 {
 
-    if(!running)
+    if (!running)
         return;
     char msg[200];
     int len;
@@ -118,7 +128,7 @@ void Network::initSocket(const char *addr, const char *port)
     /* Obtain address(es) matching host/port. */
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_family = AF_UNSPEC;     /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* tcp */
     hints.ai_flags = 0;
     hints.ai_protocol = 0; /* Any protocol */
@@ -158,6 +168,4 @@ void Network::initSocket(const char *addr, const char *port)
         emit error("No address succeeded");
         //exit(EXIT_FAILURE);
     }
-
-
 }

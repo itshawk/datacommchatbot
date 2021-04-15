@@ -14,5 +14,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::insertText(QString txt)
 {
+    fprintf(stderr, "insert text qstring txt: %s\n", txt.toLocal8Bit().constData());
+    if (txt[0] == 'c')
+    {
+        txt.remove(0, 1);
+        ui->listWidget->addItem(new QListWidgetItem(txt));
+        return;
+    }
     ui->textEdit->insertPlainText(txt + "\n");
 }

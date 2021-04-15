@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.11.3
+** Created by: Qt User Interface Compiler version 5.9.5
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,8 +10,13 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QVBoxLayout>
@@ -23,7 +28,9 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralWidget;
-    QVBoxLayout *verticalLayout;
+    QHBoxLayout *horizontalLayout;
+    QListWidget *listWidget;
+    QVBoxLayout *verticalLayout_2;
     QTextEdit *textEdit;
     QLineEdit *lineEdit;
 
@@ -34,19 +41,31 @@ public:
         MainWindow->resize(400, 300);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        verticalLayout = new QVBoxLayout(centralWidget);
-        verticalLayout->setSpacing(6);
-        verticalLayout->setContentsMargins(11, 11, 11, 11);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        horizontalLayout = new QHBoxLayout(centralWidget);
+        horizontalLayout->setSpacing(6);
+        horizontalLayout->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        listWidget = new QListWidget(centralWidget);
+        listWidget->setObjectName(QStringLiteral("listWidget"));
+        listWidget->setMaximumSize(QSize(50, 16777215));
+
+        horizontalLayout->addWidget(listWidget);
+
+        verticalLayout_2 = new QVBoxLayout();
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         textEdit = new QTextEdit(centralWidget);
         textEdit->setObjectName(QStringLiteral("textEdit"));
 
-        verticalLayout->addWidget(textEdit);
+        verticalLayout_2->addWidget(textEdit);
 
         lineEdit = new QLineEdit(centralWidget);
         lineEdit->setObjectName(QStringLiteral("lineEdit"));
 
-        verticalLayout->addWidget(lineEdit);
+        verticalLayout_2->addWidget(lineEdit);
+
+
+        horizontalLayout->addLayout(verticalLayout_2);
 
         MainWindow->setCentralWidget(centralWidget);
 
@@ -57,7 +76,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
     } // retranslateUi
 
 };

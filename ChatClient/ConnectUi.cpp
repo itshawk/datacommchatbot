@@ -36,6 +36,8 @@ ConnectUi::~ConnectUi()
     delete ui;
 }
 
+// why the fuck does this happen twice occasionally
+// inits a thing twice i think? i dunno
 void ConnectUi::on_connectButton_pressed()
 {
     //clear scuffed bool
@@ -63,7 +65,6 @@ void ConnectUi::on_connectButton_pressed()
     connect(network_, &Network::recv,
             mainUi, &MainWindow::insertText);
 
-
     //Scuffed username handling
     network_->sender(loginDetails.Username.toLocal8Bit().constData());
 
@@ -71,19 +72,20 @@ void ConnectUi::on_connectButton_pressed()
     connect(mwle, &QLineEdit::returnPressed,
             network_, [=] {network_->sender(mwle->text());mwle->clear(); });
 
-
+    //printf("here");
     //Check scuffed bool
     if (ui->errorLabel->isVisible())
         return;
 
-
+    // this actually helps im honestly not sure why
+    // assumption is race condition in the receiver thread? but really unsure
+    // investigate later
+    sleep(1); //sleep for 1 just to see if that fixes extra spawns it shouldnt but whatever
     std::thread t1(&Network::receiver, std::ref(network_));
     t1.detach();
 
-
     hide();
     mainUi->show();
-
 }
 
 void ConnectUi::saveLast()
