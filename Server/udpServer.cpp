@@ -6,27 +6,167 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define BUF_SIZE 500
+#define BACKLOG 10 /* Passed to listen() */
+#define MAX_CONNECTIONS 100
 
-struct hostservicepair
+struct connectionnamepair
 {
-    char service[32];
-    char host[1025];
+    int *socket;
     char name[50];
-    struct sockaddr_storage addr;
-    socklen_t addr_len;
+};
 
-} hostservicepair;
+struct connectionnamepair connections[MAX_CONNECTIONS];
+int numConnections = 0;
+
+void sendToAll(char *buf, int mode) // mode 1 == message, 3 == client log
+{
+    char tmpbuf[BUF_SIZE];
+    if (mode == 1)
+    {
+        sprintf(tmpbuf, "m%s", buf);
+    }
+    else if (mode == 2)
+    {
+        sprintf(tmpbuf, "w%s", buf);
+    }
+    else if (mode == 3)
+    {
+        sprintf(tmpbuf, "c%s", buf);
+    }
+    for (int i = 0; i < numConnections; i++)
+    {
+
+        if (!send(*connections[i].socket, tmpbuf, sizeof(tmpbuf), 0))
+        {
+            fprintf(stderr, "Error sending response\n");
+        }
+    }
+}
+
+void *handle(void *con)
+{
+    /* send(), recv(), close() */
+    char buf[BUF_SIZE];
+
+    struct connectionnamepair *connection = (struct connectionnamepair *)con;
+
+    if (!recv(*connection->socket, buf, sizeof(buf), 0))
+    {
+        perror("receive");
+    }
+
+    strcpy(connection->name, buf);
+    if (!send(*connection->socket, buf, sizeof(buf), 0))
+    {
+        fprintf(stderr, "Error sending response\n");
+    }
+
+    sendToAll(buf, 3);
+
+    // how the fuck is this wrong, but yea
+    // this is supposed to send all existing clients to this guy
+    // it sucks tho
+    // numconnections - 1 cause the newest one is me :)
+    // why is this sending this persons name
+    // and not the other one ???
+
+    // correction this works, i dont know what i changhed im scared to
+    // ctrl-z to find the difference so we are keeping it like this
+    for (int i = 0; i < numConnections - 1; i++)
+    {
+        sprintf(buf, "c%s", connections[i].name);
+        if (!send(*connection->socket, buf, sizeof(buf), 0))
+        {
+            fprintf(stderr, "Error sending response\n");
+        }
+    }
+    while (1)
+    {
+        if (!recv(*connection->socket, buf, sizeof(buf), 0))
+        {
+            perror("receive");
+        }
+        //fprintf(stderr, "buf: %s\n", buf);
+        if (strcmp(buf, "exit") == 0)
+        {
+            close(*connection->socket);
+        }
+        char tmpbuf[BUF_SIZE];
+
+        if (buf[0] == '/')
+        {
+            strtok(buf, " ");
+
+            if (buf[1] == 'w')
+            {
+                char *name = strtok(nullptr, " ");
+                bool foundit = 0;
+                char tmpbuf[BUF_SIZE];
+                for (int i = 0; i < numConnections; i++)
+                {
+
+                    if (strcmp(connections[i].name, name) == 0)
+                    {
+                        char *msg = strtok(nullptr, " ");
+                        sprintf(tmpbuf, "w(Whisper From %s) %s", name, msg);
+
+                        if (!send(*connections[i].socket, tmpbuf, sizeof(tmpbuf), 0))
+                        {
+                            fprintf(stderr, "Error sending response\n");
+                        }
+                        sprintf(tmpbuf, "w(Whisper To %s) %s", name, msg);
+
+                        if (!send(*connection->socket, tmpbuf, sizeof(tmpbuf), 0))
+                        {
+                            fprintf(stderr, "Error sending response\n");
+                        }
+                        foundit = 1;
+                    }
+                }
+                if (!foundit)
+                {
+                    // probably need to make seperate error thingie in client to handle
+                    // stuff like this
+                    sprintf(tmpbuf, "w%s is not a valid user", name);
+
+                    if (!send(*connection->socket, tmpbuf, sizeof(tmpbuf), 0))
+                    {
+                        fprintf(stderr, "Error sending response\n");
+                    }
+                }
+            }
+            else
+            {
+                char nope[] = "thats like not a real command bro";
+
+                if (!send(*connection->socket, nope, sizeof(nope), 0))
+                {
+                    fprintf(stderr, "Error sending response\n");
+                }
+            }
+        }
+        else
+        {
+            sprintf(tmpbuf, "%s_%s", buf, connection->name);
+            sendToAll(tmpbuf, 1);
+        }
+    }
+
+    return NULL;
+}
 
 int main(int argc, char *argv[])
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
+    pthread_t thread;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
-    ssize_t nread;
+    int newsocket;
     char buf[BUF_SIZE];
 
     if (argc != 2)
@@ -36,10 +176,10 @@ int main(int argc, char *argv[])
     }
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
-    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_family = AF_UNSPEC;     /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
+    hints.ai_flags = AI_PASSIVE;     /* For wildcard IP address */
+    hints.ai_protocol = 0;           /* Any protocol */
     hints.ai_canonname = NULL;
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
@@ -77,132 +217,40 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /* Read datagrams and echo them back to sender. */
+    if (listen(sfd, BACKLOG) == -1)
+    {
+        perror("listen");
+        return 0;
+    }
 
-    struct hostservicepair logged_addr[100];
-    int numlogged = 0;
-    for (;;)
+    while (1)
     {
         peer_addr_len = sizeof(peer_addr);
-        nread = recvfrom(sfd, buf, BUF_SIZE, 0,
-                         (struct sockaddr *)&peer_addr, &peer_addr_len);
+        newsocket = accept(sfd, (struct sockaddr *)&peer_addr, &peer_addr_len);
 
-        if (nread == -1)
+        if (newsocket == -1)
+        {
+            perror("accept");
             continue; /* Ignore failed request */
+        }
 
         char host[NI_MAXHOST], service[NI_MAXSERV];
 
-        s = getnameinfo((struct sockaddr *)&peer_addr,
-                        peer_addr_len, host, NI_MAXHOST,
-                        service, NI_MAXSERV, NI_NUMERICSERV);
-
-        int found = -1;
-        for (int i = 0; i <= numlogged; i++)
+        int *safesock = (int *)(malloc(sizeof(int)));
+        if (safesock)
         {
-            if (strcmp(logged_addr[i].host, host) == 0 && strcmp(logged_addr[i].service, service) == 0)
+            *safesock = newsocket;
+            connections[numConnections].socket = safesock;
+
+            if (pthread_create(&thread, NULL, handle, (void *)&connections[numConnections++]))
             {
-                printf("Already Logged this one\n");
-                found = i;
-                break;
+                fprintf(stderr, "Failed to create thread\n");
             }
-        }
-
-        if (found == -1)
-        {
-            if (numlogged < 100)
-            {
-                strcpy(logged_addr[numlogged].host, host);
-                strcpy(logged_addr[numlogged].service, service);
-                strcpy(logged_addr[numlogged].name, buf);
-                logged_addr[numlogged].name[nread - 1] = '\0';
-
-                logged_addr[numlogged].addr = peer_addr;
-                logged_addr[numlogged].addr_len = peer_addr_len;
-            }
-            else
-            {
-                numlogged = 0;
-                strcpy(logged_addr[numlogged].host, host);
-                strcpy(logged_addr[numlogged].service, service);
-                strcpy(logged_addr[numlogged].name, buf);
-                logged_addr[numlogged].addr = peer_addr;
-                logged_addr[numlogged].name[nread - 1] = '\0';
-                logged_addr[numlogged].addr_len = peer_addr_len;
-            }
-            if (s == 0)
-                printf("Received %zd bytes from %s:%s, %s\n",
-                       nread, logged_addr[numlogged].host, logged_addr[numlogged].service, logged_addr[numlogged].name);
-            else
-                fprintf(stderr, "getnameinfo: %s\n", gai_strerror(s));
-
-            sprintf(buf, "Client Logged as %s", logged_addr[numlogged].name);
-            if (sendto(sfd, buf, strlen(buf), 0,
-                       (struct sockaddr *)&peer_addr,
-                       peer_addr_len) != strlen(buf))
-                fprintf(stderr, "Error sending response\n");
-
-            numlogged++;
-            continue;
-        }
-
-        if (buf[0] == '/')
-        {
-            char tmpbuf[500];
-
-            if (buf[1] == 'w')
-            {
-                fprintf(stderr, "recipient msg: %s\n", strtok(buf, " "));
-                char *recipient = strtok(nullptr, " ");
-                fprintf(stderr, "recipient: %s\n", recipient);
-
-                char *msg = strtok(nullptr, "");
-                fprintf(stderr, "msg: %s\n", msg);
-                sprintf(tmpbuf, "w(Whisper From %s) %s", logged_addr[found].name, msg);
-                fprintf(stderr, "tmpbuf: %s\n", tmpbuf);
-                for (int i = 0; i <= numlogged; i++)
-                {
-                    if (strcmp(logged_addr[i].name, recipient) == 0)
-                    {
-                        printf("found recipient");
-                        if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[i].addr, logged_addr[i].addr_len) != strlen(tmpbuf))
-                        {
-                            fprintf(stderr, "Error sending response\n");
-                        }
-                        bzero(tmpbuf, strlen(tmpbuf));
-                        sprintf(tmpbuf, "w(Whisper To %s) %s", logged_addr[i].name, msg);
-                        if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[found].addr, logged_addr[found].addr_len) != strlen(tmpbuf))
-                        {
-                            fprintf(stderr, "Error sending response\n");
-                        }
-                        break;
-                    }
-                }
-            }
-            continue;
-        }
-
-        if (s == 0)
-        {
-            //printf("Received %zd bytes from known addr %s:%s, %s\n",
-            //       nread, logged_addr[found].host, logged_addr[found].service, logged_addr[found].name);
-            printf("%s: %s", logged_addr[found].name, buf);
+            printf("numConnections: %d\n", numConnections);
         }
         else
         {
-            fprintf(stderr, "getnameinfo: %s\n", gai_strerror(s));
-        }
-        buf[nread - 1] = '\0';
-
-        for (int i = 0; i < numlogged; i++)
-        {
-            char tmpbuf[500];
-
-            sprintf(tmpbuf, "m%s_%s", buf, logged_addr[found].name);
-
-            if (sendto(sfd, tmpbuf, strlen(tmpbuf), 0, (struct sockaddr *)&logged_addr[i].addr, logged_addr[i].addr_len) != strlen(tmpbuf))
-            {
-                fprintf(stderr, "Error sending response\n");
-            }
+            perror("malloc");
         }
     }
 }
