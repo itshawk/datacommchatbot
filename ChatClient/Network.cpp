@@ -109,6 +109,11 @@ void Network::sender(QString in)
     {
         emit error("partial/failed write");
     }
+
+    // if (strcmp(msg, "exit") == 0)
+    // {
+    //     close(sfd);
+    // }
     //}
 }
 

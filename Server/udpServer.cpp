@@ -89,10 +89,12 @@ void *handle(void *con)
         {
             perror("receive");
         }
-        //fprintf(stderr, "buf: %s\n", buf);
+
+        // send msg to everyone to remove here prob
         if (strcmp(buf, "exit") == 0)
         {
             close(*connection->socket);
+            return 0;
         }
         char tmpbuf[BUF_SIZE];
 
