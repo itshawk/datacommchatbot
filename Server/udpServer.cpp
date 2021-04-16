@@ -81,9 +81,9 @@ void *handle(void *con)
     for (int i = 0; i < numConnections - 1; i++)
     {
         sprintf(buf, "c%s", connections[i].name);
-        fprintf(stderr, "existing username %d: %s\n", i, buf);
         if (*connections[i].socket != -1)
         {
+            fprintf(stderr, "existing username %d: %s\n", i, buf);
             if (!send(*connection->socket, buf, sizeof(buf), 0))
             {
                 fprintf(stderr, "Error sending response\n");
@@ -92,13 +92,14 @@ void *handle(void *con)
     }
     while (1)
     {
-        if (!recv(*connection->socket, buf, sizeof(buf), 0))
-        {
-            perror("receive");
-        }
+        // 0 is orderly shutdown so clean if 0
+        // if (recv(*connection->socket, buf, sizeof(buf), 0))
+        // {
+        //     perror("receive");
+        // }
 
         // send msg to everyone to remove here prob
-        if (strcmp(buf, "exit") == 0)
+        if (!recv(*connection->socket, buf, sizeof(buf), 0) || strcmp(buf, "exit") == 0)
         {
             sendToAll(connection->name, 2);
             close(*connection->socket);

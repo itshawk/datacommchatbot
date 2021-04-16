@@ -90,7 +90,7 @@ public:
 
     void retranslateUi(QWidget *ConnectUi)
     {
-        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Form", Q_NULLPTR));
+        ConnectUi->setWindowTitle(QApplication::translate("ConnectUi", "Connect", Q_NULLPTR));
         addressLine->setInputMask(QString());
         addressLine->setText(QString());
         addressLine->setPlaceholderText(QApplication::translate("ConnectUi", "Address", Q_NULLPTR));

@@ -3,9 +3,11 @@
 
 #include <QMainWindow>
 #include <QMenu>
-
-namespace Ui {
-class ChatWindow;
+#include <QCloseEvent>
+#include <Qt>
+namespace Ui
+{
+    class ChatWindow;
 }
 
 class ChatWindow : public QMainWindow
@@ -14,19 +16,17 @@ class ChatWindow : public QMainWindow
 
 public:
     explicit ChatWindow(QWidget *parent = 0);
+    void closeEvent(QCloseEvent *event);
     ~ChatWindow();
 
 private:
-
-
-    QMenu* menu_;
+    QMenu *menu_;
     Ui::ChatWindow *ui;
 
 public slots:
     //Appends text to textEdit
     void insertText(QString txt);
     void OpenMenu(QPoint pos);
-
 };
 
 #endif // MAINWINDOW_H

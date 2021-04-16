@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
+
 ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
                                         ui(new Ui::ConnectUi)
 {
@@ -40,7 +41,7 @@ ConnectUi::~ConnectUi()
 // inits a thing twice i think? i dunno
 void ConnectUi::on_connectButton_pressed()
 {
-    if(connected)
+    if (connected)
         return;
     connected = true;
     //clear scuffed bool
@@ -75,12 +76,12 @@ void ConnectUi::on_connectButton_pressed()
     connect(mwle, &QLineEdit::returnPressed,
             network_, [=] {network_->sender(mwle->text());mwle->clear(); });
 
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(sendExit()));
+
     //printf("here");
     //Check scuffed bool
     if (ui->errorLabel->isVisible())
         return;
-
-
 
     // this actually helps im honestly not sure why
     // assumption is race condition in the receiver thread? but really unsure
@@ -95,7 +96,6 @@ void ConnectUi::on_connectButton_pressed()
 
 void ConnectUi::saveLast()
 {
-
     QJsonObject obj;
     obj["Address"] = loginDetails.Address;
     obj["Port"] = loginDetails.Port;
@@ -109,7 +109,6 @@ void ConnectUi::saveLast()
 
 bool ConnectUi::loadLast()
 {
-
     QFile loadfile(fileName);
     loadfile.open(QIODevice::ReadOnly);
 
@@ -132,4 +131,9 @@ void ConnectUi::showErrorLabel(QString err)
     ui->errorLabel->setText(err);
     ui->errorLabel->setVisible(true);
     connected = false;
+}
+
+void ConnectUi::sendExit()
+{
+    network_->sender(QString("exit\n"));
 }

@@ -5,9 +5,10 @@
 #include <ui_Connect.h>
 #include "Network.h"
 #include <ChatWindow.h>
-namespace Ui {
+namespace Ui
+{
     class ConnectUi;
-    }
+}
 
 struct LoginDetails
 {
@@ -22,9 +23,9 @@ class ConnectUi : public QWidget
 
 public:
     explicit ConnectUi(QWidget *parent = nullptr);
-    Network* GetNetwork(){return network_;}
+    Network *GetNetwork() { return network_; }
     ~ConnectUi();
-    
+
 private:
     void saveLast();
     bool loadLast();
@@ -38,6 +39,7 @@ private:
 public slots:
     void on_connectButton_pressed();
     void showErrorLabel(QString err);
+    void sendExit();
 };
 
 #endif // MAINWINDOW_H

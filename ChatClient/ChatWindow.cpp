@@ -1,7 +1,25 @@
 #include "ChatWindow.h"
 #include "ui_Chatwindow.h"
 #include <Qt>
+#include <QCloseEvent>
+#include <QMessageBox>
 
+void ChatWindow::closeEvent(QCloseEvent *event)
+{
+    QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Chat Client",
+                                                               tr("Are you sure?\n"),
+                                                               QMessageBox::No | QMessageBox::Yes,
+                                                               QMessageBox::Yes);
+
+    if (resBtn != QMessageBox::Yes)
+    {
+        event->ignore();
+    }
+    else
+    {
+        event->accept();
+    }
+}
 ChatWindow::ChatWindow(QWidget *parent) : QMainWindow(parent),
                                           ui(new Ui::ChatWindow)
 {
@@ -9,8 +27,8 @@ ChatWindow::ChatWindow(QWidget *parent) : QMainWindow(parent),
     ui->textEdit->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
 
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->listWidget,SIGNAL(customContextMenuRequested(QPoint)),
-                            SLOT(OpenMenu(QPoint)));
+    connect(ui->listWidget, SIGNAL(customContextMenuRequested(QPoint)),
+            SLOT(OpenMenu(QPoint)));
 }
 
 ChatWindow::~ChatWindow()
@@ -18,15 +36,13 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
-
 void ChatWindow::OpenMenu(QPoint pos)
 {
     menu_ = new QMenu;
     menu_->addAction("Whisper");
 
-    if(ui->listWidget->itemAt(pos))
+    if (ui->listWidget->itemAt(pos))
         menu_->popup(ui->listWidget->viewport()->mapToGlobal(pos));
-
 }
 
 void ChatWindow::insertText(QString txt)
