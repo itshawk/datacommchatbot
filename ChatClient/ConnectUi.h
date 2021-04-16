@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <ui_Connect.h>
 #include "Network.h"
-#include <mainwindow.h>
+#include <ChatWindow.h>
 namespace Ui {
     class ConnectUi;
     }
@@ -32,9 +32,9 @@ private:
     QString fileName = "lastLogin.dat";
     bool loaded = false;
     Ui::ConnectUi *ui;
-    MainWindow *mainUi;
+    ChatWindow *mainUi;
     Network *network_;
-
+    bool connected = false;
 public slots:
     void on_connectButton_pressed();
     void showErrorLabel(QString err);

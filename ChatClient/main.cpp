@@ -10,8 +10,8 @@
 #include <signal.h>
 #include <chrono>
 #include <pthread.h>
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "ChatWindow.h"
+#include "ui_ChatWindow.h"
 #include <QApplication>
 #include <ConnectUi.h>
 

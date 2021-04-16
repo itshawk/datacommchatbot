@@ -10,7 +10,7 @@ ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
 {
     ui->setupUi(this);
     ui->errorLabel->setVisible(false);
-    mainUi = new MainWindow();
+    mainUi = new ChatWindow();
 
     //Create the network and add error handling before starting
     network_ = new Network();
@@ -40,6 +40,9 @@ ConnectUi::~ConnectUi()
 // inits a thing twice i think? i dunno
 void ConnectUi::on_connectButton_pressed()
 {
+    if(connected)
+        return;
+    connected = true;
     //clear scuffed bool
     ui->errorLabel->setVisible(false);
 
@@ -63,7 +66,7 @@ void ConnectUi::on_connectButton_pressed()
 
     //Setup reciver handler
     connect(network_, &Network::recv,
-            mainUi, &MainWindow::insertText);
+            mainUi, &ChatWindow::insertText);
 
     //Scuffed username handling
     network_->sender(loginDetails.Username.toLocal8Bit().constData());
@@ -76,6 +79,8 @@ void ConnectUi::on_connectButton_pressed()
     //Check scuffed bool
     if (ui->errorLabel->isVisible())
         return;
+
+
 
     // this actually helps im honestly not sure why
     // assumption is race condition in the receiver thread? but really unsure
@@ -126,4 +131,5 @@ void ConnectUi::showErrorLabel(QString err)
 {
     ui->errorLabel->setText(err);
     ui->errorLabel->setVisible(true);
+    connected = false;
 }

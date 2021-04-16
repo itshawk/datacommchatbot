@@ -31,7 +31,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        mainwindow.cpp\
+        ChatWindow.cpp\
         main.cpp\
         ConnectUi.cpp\
         Network.cpp
@@ -39,10 +39,10 @@ SOURCES += \
 
 
 HEADERS += \
-        mainwindow.h\
+        ChatWindow.h\
         Network.h\
     ConnectUi.h
 
 FORMS += \
-        mainwindow.ui\
-        Connect.ui
+        Connect.ui \
+    Chatwindow.ui
