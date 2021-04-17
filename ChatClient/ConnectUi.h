@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <ui_Connect.h>
-#include "Network.h"
 #include <ChatWindow.h>
 namespace Ui
 {

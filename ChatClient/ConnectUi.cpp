@@ -11,12 +11,14 @@ ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
 {
     ui->setupUi(this);
     ui->errorLabel->setVisible(false);
-    mainUi = new ChatWindow();
+
 
     //Create the network and add error handling before starting
     network_ = new Network();
     connect(network_, &Network::error,
             this, &ConnectUi::showErrorLabel);
+
+    mainUi = new ChatWindow(nullptr,network_);
 
     //Handle enter on username tb
     connect(ui->usernameLine, &QLineEdit::returnPressed,
@@ -72,12 +74,7 @@ void ConnectUi::on_connectButton_pressed()
     //Scuffed username handling
     network_->sender(loginDetails.Username.toLocal8Bit().constData());
 
-    auto mwle = mainUi->findChild<QLineEdit *>("lineEdit");
-    connect(mwle, &QLineEdit::returnPressed,
-            network_, [=] {network_->sender(mwle->text());mwle->clear(); });
-
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(sendExit()));
-
     //printf("here");
     //Check scuffed bool
     if (ui->errorLabel->isVisible())

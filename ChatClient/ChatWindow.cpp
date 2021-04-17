@@ -3,6 +3,7 @@
 #include <Qt>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <iostream>
 
 void ChatWindow::closeEvent(QCloseEvent *event)
 {
@@ -21,27 +22,65 @@ void ChatWindow::closeEvent(QCloseEvent *event)
     }
 }
 ChatWindow::ChatWindow(QWidget *parent) : QMainWindow(parent),
+
+/*
+    Move whisper to own ui file
+*/
+
+
+ChatWindow::ChatWindow(QWidget *parent,Network* network) : QMainWindow(parent),
                                           ui(new Ui::ChatWindow)
 {
+    network_ = network;
     ui->setupUi(this);
     ui->textEdit->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
 
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget, SIGNAL(customContextMenuRequested(QPoint)),
             SLOT(OpenMenu(QPoint)));
+    connect(ui->listWidget,SIGNAL(customContextMenuRequested(QPoint)),
+                            SLOT(OpenMenu(QPoint)));
+    connect(ui->lineEdit, &QLineEdit::returnPressed,
+            network, [=] {network->sender(ui->lineEdit->text());ui->lineEdit->clear(); });
 }
 
 ChatWindow::~ChatWindow()
 {
     delete ui;
 }
+void ChatWindow::Whisper()
+{
+    disconnect(ui->lineEdit,&QLineEdit::returnPressed,nullptr,nullptr);
 
+
+    auto name = ui->listWidget->selectedItems()[0]->text();
+    network_->sender("/w "+ name + " " +ui->lineEdit->text());
+
+    ui->lineEdit->clear();
+    ui->lineEdit->setPlaceholderText(" ");
+
+    connect(ui->lineEdit, &QLineEdit::returnPressed,
+            network_, [=] {network_->sender(ui->lineEdit->text());ui->lineEdit->clear(); });
+}
+void ChatWindow::HandleWhisperAction()
+{
+
+    disconnect(ui->lineEdit,&QLineEdit::returnPressed,nullptr,nullptr);
+    connect(ui->lineEdit,&QLineEdit::returnPressed,this,&ChatWindow::Whisper);
+    ui->lineEdit->setPlaceholderText("Whispering " + ui->listWidget->selectedItems()[0]->text());
+
+
+
+}
 void ChatWindow::OpenMenu(QPoint pos)
 {
     menu_ = new QMenu;
     menu_->addAction("Whisper");
+    connect(menu_,SIGNAL(triggered(QAction*)),SLOT(HandleWhisperAction()));
 
     if (ui->listWidget->itemAt(pos))
+
+    if(ui->listWidget->itemAt(pos))
         menu_->popup(ui->listWidget->viewport()->mapToGlobal(pos));
 }
 
