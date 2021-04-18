@@ -11,14 +11,14 @@
 #include <chrono>
 #include <pthread.h>
 #include "ChatWindow.h"
-#include "ui_ChatWindow.h"
+#include "ui_Chatwindow.h"
 #include <QApplication>
 #include <ConnectUi.h>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    
+
     ConnectUi c;
     c.show();
 
