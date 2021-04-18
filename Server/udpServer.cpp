@@ -8,6 +8,8 @@
 #include <netdb.h>
 #include <pthread.h>
 
+// use linked list instead of array
+
 #define BUF_SIZE 500
 #define BACKLOG 10 /* Passed to listen() */
 #define MAX_CONNECTIONS 100
@@ -99,20 +101,23 @@ void *handle(void *con)
         // }
 
         // send msg to everyone to remove here prob
+        // recv each byte and build string until exit/end character then go and come back after
         if (!recv(*connection->socket, buf, sizeof(buf), 0) || strcmp(buf, "exit") == 0)
         {
             sendToAll(connection->name, 2);
-            close(*connection->socket);
 
             for (int i = 0; i < numConnections; i++)
             {
 
-                if (strcmp(connections[i].name, connection->name) == 0)
+                if (*connection->socket == *connections[i].socket)
                 {
+                    close(*connection->socket);
+
                     *connections[i].socket = -1;
+
+                    return 0;
                 }
             }
-            return 0;
         }
         char tmpbuf[BUF_SIZE];
 
@@ -253,8 +258,6 @@ int main(int argc, char *argv[])
             perror("accept");
             continue; /* Ignore failed request */
         }
-
-        char host[NI_MAXHOST], service[NI_MAXSERV];
 
         int *safesock = (int *)(malloc(sizeof(int)));
         if (safesock)
