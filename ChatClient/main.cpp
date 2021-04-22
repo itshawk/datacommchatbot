@@ -105,5 +105,8 @@ finish:
     ConnectUi c;
     c.show();
 
+    Whisper w;
+    w.show();
+
     a.exec();
 }

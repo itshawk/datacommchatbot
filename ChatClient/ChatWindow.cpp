@@ -21,7 +21,6 @@ void ChatWindow::closeEvent(QCloseEvent *event)
         event->accept();
     }
 }
-ChatWindow::ChatWindow(QWidget *parent) : QMainWindow(parent),
 
 /*
     Move whisper to own ui file
@@ -36,40 +35,40 @@ ChatWindow::ChatWindow(QWidget *parent,Network* network) : QMainWindow(parent),
     ui->textEdit->setTextInteractionFlags(Qt::TextInteractionFlag::NoTextInteraction);
 
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    //Right-click menu handling
     connect(ui->listWidget, SIGNAL(customContextMenuRequested(QPoint)),
             SLOT(OpenMenu(QPoint)));
-    connect(ui->listWidget,SIGNAL(customContextMenuRequested(QPoint)),
-                            SLOT(OpenMenu(QPoint)));
+    //Send message
     connect(ui->lineEdit, &QLineEdit::returnPressed,
-            network, [=] {network->sender(ui->lineEdit->text());ui->lineEdit->clear(); });
+            network, [=] {network->send(ui->lineEdit->text());ui->lineEdit->clear(); });
 }
 
 ChatWindow::~ChatWindow()
 {
     delete ui;
 }
+
 void ChatWindow::Whisper()
 {
     disconnect(ui->lineEdit,&QLineEdit::returnPressed,nullptr,nullptr);
 
 
     auto name = ui->listWidget->selectedItems()[0]->text();
-    network_->sender("/w "+ name + " " +ui->lineEdit->text());
+    network_->send("/w "+ name + " " +ui->lineEdit->text());
 
     ui->lineEdit->clear();
     ui->lineEdit->setPlaceholderText(" ");
 
     connect(ui->lineEdit, &QLineEdit::returnPressed,
-            network_, [=] {network_->sender(ui->lineEdit->text());ui->lineEdit->clear(); });
+            network_, [=] {network_->send(ui->lineEdit->text());ui->lineEdit->clear(); });
 }
+
 void ChatWindow::HandleWhisperAction()
 {
 
     disconnect(ui->lineEdit,&QLineEdit::returnPressed,nullptr,nullptr);
     connect(ui->lineEdit,&QLineEdit::returnPressed,this,&ChatWindow::Whisper);
     ui->lineEdit->setPlaceholderText("Whispering " + ui->listWidget->selectedItems()[0]->text());
-
-
 
 }
 void ChatWindow::OpenMenu(QPoint pos)
@@ -86,7 +85,7 @@ void ChatWindow::OpenMenu(QPoint pos)
 
 void ChatWindow::insertText(QString txt)
 {
-    fprintf(stderr, "insert text qstring txt: %s\n", txt.toLocal8Bit().constData());
+    fprintf(stderr, "Received msg: %s\n", txt.toLocal8Bit().constData());
 
     if (txt[0] == 'c')
     {

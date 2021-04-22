@@ -26,11 +26,13 @@ private:
 
 public slots:
     //Appends text to textEdit
+    void Whisper();
     void insertText(QString txt);
     void HandleWhisperAction();
     void OpenMenu(QPoint pos);
-    void Whisper();
+
 
 };
 
 #endif // MAINWINDOW_H
+

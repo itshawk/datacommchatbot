@@ -3,26 +3,25 @@
 #include <QApplication>
 void Network::Start(const char *addr, const char *port)
 {
-    initSocket(addr, port);
+    initilizeSocket(addr, port);
 }
 
 void Network::receiver()
 {
 
-    if (!running)
+    if (!connected_)
         return;
 
     char buf[BUF_SIZE];
     ssize_t nread;
     bool setup = 0;
 
-    //QPlainTextEdit *plainText = w->findChild<QPlainTextEdit *>("plainTextEdit");
     QString str;
 
     while (1)
     {
         bzero(buf, BUF_SIZE);
-        nread = ::recv(sfd, buf, sizeof(buf), 0);
+        nread = ::recv(socket_, buf, sizeof(buf), 0);
         printf("buf: %s\n", buf);
         if (nread == -1)
         {
@@ -41,7 +40,7 @@ void Network::receiver()
         if (!setup)
         {
 
-            str.sprintf("mLogged in as: %s", buf);
+            str.asprintf("mLogged in as: %s", buf);
             emit recv(str);
 
             setup = 1;
@@ -84,11 +83,12 @@ void Network::receiver()
         }
     }
 }
-void Network::sender(QString in)
+void Network::send(QString in)
 {
 
-    if (!running)
+    if (!connected_)
         return;
+
     char msg[200];
     int len;
 
@@ -109,7 +109,7 @@ void Network::sender(QString in)
                 "Ignoring long message in argument\n");
     }
 
-    if (write(sfd, msg, len) != len)
+    if (write(socket_, msg, len) != len)
     {
         emit error("partial/failed write");
     }
@@ -125,7 +125,7 @@ void Network::sender(QString in)
     //}
 }
 
-void Network::initSocket(const char *addr, const char *port)
+void Network::initilizeSocket(const char *addr, const char *port)
 {
 
     struct addrinfo hints;
@@ -160,18 +160,18 @@ void Network::initSocket(const char *addr, const char *port)
 
     for (rp = result; rp != nullptr; rp = rp->ai_next)
     {
-        sfd = socket(rp->ai_family, rp->ai_socktype,
+        socket_ = socket(rp->ai_family, rp->ai_socktype,
                      rp->ai_protocol);
-        if (sfd == -1)
+        if (socket_ == -1)
             continue;
 
-        if (::connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+        if (::connect(socket_, rp->ai_addr, rp->ai_addrlen) != -1)
         {
-            running = true;
+            connected_ = true;
             break; /* Success */
         }
 
-        close(sfd);
+        close(socket_);
     }
 
     freeaddrinfo(result); /* No longer needed */

@@ -72,7 +72,7 @@ void ConnectUi::on_connectButton_pressed()
             mainUi, &ChatWindow::insertText);
 
     //Scuffed username handling
-    network_->sender(loginDetails.Username.toLocal8Bit().constData());
+    network_->send(loginDetails.Username.toLocal8Bit().constData());
 
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(sendExit()));
     //printf("here");
@@ -132,5 +132,5 @@ void ConnectUi::showErrorLabel(QString err)
 
 void ConnectUi::sendExit()
 {
-    network_->sender(QString("exit\n"));
+    network_->send(QString("exit\n"));
 }

@@ -24,12 +24,12 @@ public:
     void receiver();
 
 private:
-    int sfd;
-    void initSocket(const char *addr, const char *port);
-    bool running = false;
+    int socket_;
+    void initilizeSocket(const char *addr, const char *port);
+    bool connected_ = false;
 
 public slots:
-    void sender(QString in);
+    void send(QString in);
 signals:
     void recv(QString in);
     void error(QString err);

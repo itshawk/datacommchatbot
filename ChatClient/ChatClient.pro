@@ -34,15 +34,18 @@ SOURCES += \
         ChatWindow.cpp\
         main.cpp\
         ConnectUi.cpp\
-        Network.cpp
+        Network.cpp \
+        Whisper.cpp
        
 
 
 HEADERS += \
         ChatWindow.h\
         Network.h\
-    ConnectUi.h
+        ConnectUi.h \
+        Whisper.h
 
 FORMS += \
         Connect.ui \
-    Chatwindow.ui
+    Chatwindow.ui \
+    Whisper.ui
