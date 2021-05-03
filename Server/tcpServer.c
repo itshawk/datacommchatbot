@@ -7,8 +7,11 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 // use linked list instead of array
+
+FILE *logptr;
 
 #define BUF_SIZE 500
 #define BACKLOG 10 /* Passed to listen() */
@@ -46,6 +49,8 @@ void sendToAll(char *buf, int mode) // mode 1 == message, 2 == remove from list,
             fprintf(stderr, "Error sending response\n");
         }
     }
+    fprintf(logptr, "Send to all: %s\n", tmpbuf);
+    fflush(logptr);
 }
 
 void *handle(void *con)
@@ -61,6 +66,7 @@ void *handle(void *con)
     }
 
     strcpy(connection->name, buf);
+    fprintf(logptr, "Received Name for Client: %s\n", connection->name);
     if (!send(*connection->socket, buf, sizeof(buf), 0))
     {
         fprintf(stderr, "Error sending response\n");
@@ -80,18 +86,18 @@ void *handle(void *con)
     // also theoretically need to lock pthread access on numconnections
     // and connections when editing them and using them
     // struct with mutex in it should be enough
-    for (int i = 0; i < numConnections - 1; i++)
-    {
-        sprintf(buf, "c%s", connections[i].name);
-        if (*connections[i].socket != -1)
-        {
-            fprintf(stderr, "existing username %d: %s\n", i, buf);
-            if (!send(*connection->socket, buf, sizeof(buf), 0))
-            {
-                fprintf(stderr, "Error sending response\n");
-            }
-        }
-    }
+    // for (int i = 0; i < numConnections - 1; i++)
+    // {
+    //     sprintf(buf, "c%s", connections[i].name);
+    //     if (*connections[i].socket != -1)
+    //     {
+    //         fprintf(stderr, "existing username %d: %s\n", i, buf);
+    //         if (!send(*connection->socket, buf, sizeof(buf), 0))
+    //         {
+    //             fprintf(stderr, "Error sending response\n");
+    //         }
+    //     }
+    // }
     while (1)
     {
         // 0 is orderly shutdown so clean if 0
@@ -120,14 +126,14 @@ void *handle(void *con)
             }
         }
         char tmpbuf[BUF_SIZE];
-
+        printf("%s\n", buf);
         if (buf[0] == '/')
         {
             strtok(buf, " ");
 
             if (buf[1] == 'w')
             {
-                char *name = strtok(nullptr, " ");
+                char *name = strtok(NULL, " ");
                 bool foundit = 0;
                 char tmpbuf[BUF_SIZE];
                 for (int i = 0; i < numConnections; i++)
@@ -135,7 +141,7 @@ void *handle(void *con)
 
                     if (strcmp(connections[i].name, name) == 0)
                     {
-                        char *msg = strtok(nullptr, " ");
+                        char *msg = strtok(NULL, " ");
                         sprintf(tmpbuf, "w(Whisper From %s) %s", name, msg);
 
                         if (!send(*connections[i].socket, tmpbuf, sizeof(tmpbuf), 0))
@@ -163,10 +169,15 @@ void *handle(void *con)
                     }
                 }
             }
+            // else if (buf[1] == 'v')
+            // {
+            //     fprintf(stderr, "got a audio frame in theory\n");
+            //     fprintf(stderr, "%s", buf);
+            // }
             else
             {
-                char nope[] = "thats like not a real command bro";
-
+                char nope[] = "mthats like not a real command bro";
+                printf("%s\n", buf);
                 if (!send(*connection->socket, nope, sizeof(nope), 0))
                 {
                     fprintf(stderr, "Error sending response\n");
@@ -178,6 +189,8 @@ void *handle(void *con)
             sprintf(tmpbuf, "%s_%s", buf, connection->name);
             sendToAll(tmpbuf, 1);
         }
+        fprintf(logptr, "Sent Message: %s\n", tmpbuf);
+        fflush(logptr);
     }
 
     return NULL;
@@ -185,6 +198,9 @@ void *handle(void *con)
 
 int main(int argc, char *argv[])
 {
+
+    logptr = fopen("ChatServer.log", "a");
+
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
@@ -209,6 +225,7 @@ int main(int argc, char *argv[])
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
+    fprintf(logptr, "\n\nServer Starting\n");
     s = getaddrinfo(NULL, argv[1], &hints, &result);
     if (s != 0)
     {
@@ -247,11 +264,13 @@ int main(int argc, char *argv[])
         perror("listen");
         return 0;
     }
+    fprintf(logptr, "Server Started and Listening\n");
 
     while (1)
     {
         peer_addr_len = sizeof(peer_addr);
         newsocket = accept(sfd, (struct sockaddr *)&peer_addr, &peer_addr_len);
+        fprintf(logptr, "Server Accepted Client\n");
 
         if (newsocket == -1)
         {
@@ -270,10 +289,12 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Failed to create thread\n");
             }
             printf("numConnections: %d\n", numConnections);
+            fprintf(logptr, "numConnections: %d\n", numConnections);
         }
         else
         {
             perror("malloc");
         }
+        fflush(logptr);
     }
 }

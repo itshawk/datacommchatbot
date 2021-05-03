@@ -1,9 +1,30 @@
 #include "Network.h"
-
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <QApplication>
+#include <time.h>
+
+void Network::logAction(const char *loggedAction)
+{
+    if (logptr == NULL)
+    {
+        logptr = fopen("ChatClient.log", "a");
+    }
+    char timeout[1000];
+    time_t t = time(NULL);
+    struct tm *p = localtime(&t);
+    strftime(timeout, 1000, "%F-%H-%M-%S", p);
+
+    printf("%s: %s\n", timeout, loggedAction);
+    fprintf(logptr, "%s: %s\n", timeout, loggedAction);
+    fflush(logptr);
+}
+
 void Network::Start(const char *addr, const char *port)
 {
     initSocket(addr, port);
+    logptr = fopen("ChatClient.log", "a");
 }
 
 void Network::receiver()
@@ -34,8 +55,7 @@ void Network::receiver()
         if (nread == 0)
         {
             perror("we outtie server died on purpose");
-            // this sigsegv's occasionally probably cause threads were doing stuff
-            // qt shutdown or something mybe? doesnt matter since we wanan die here anyway
+
             exit(EXIT_SUCCESS);
         }
         if (!setup)
@@ -43,7 +63,6 @@ void Network::receiver()
 
             str.sprintf("mLogged in as: %s", buf);
             emit recv(str);
-
             setup = 1;
         }
         else
@@ -81,6 +100,8 @@ void Network::receiver()
                 str.sprintf("%s", buf);
             }
             emit recv(str);
+            str.remove(0, 1);
+            this->logAction(str.toLocal8Bit().constData());
         }
     }
 }
@@ -96,6 +117,16 @@ void Network::sender(QString in)
         return;
 
     strcpy(msg, in.toLocal8Bit().constData());
+
+    // First attempt at Voice Chat
+    // if (msg[1] == 'v' && msg[0] == '/')
+    // {
+    //     strtok(msg, " ");
+    //     char *name = strtok(NULL, " ");
+    //     std::thread t1(&Network::audioSender, this, name);
+    //     t1.detach();
+    //     return;
+    // }
 
     //printf("\033[A\33[2KT\r");
     //printf("*");
@@ -124,6 +155,75 @@ void Network::sender(QString in)
     // }
     //}
 }
+
+// First attempt at Voice Chat Broken on Server Side I think
+// #define BUFSIZE 512
+
+// /* A simple routine calling UNIX write() in a loop */
+// ssize_t Network::loop_write(int fd, const void *data, size_t size, char *name)
+// {
+//     ssize_t ret = 0;
+//     uint8_t buf[BUFSIZE + 100];
+//     memmove(buf + strlen(name) + 2, data, size);
+//     buf[0] = '/';
+//     buf[1] = 'v';
+//     for (int i = 0; i < strlen(name); i++)
+//     {
+//         buf[i + 2] = name[i];
+//     }
+
+//     printf("%s", buf);
+//     if ((ret = write(fd, buf, size)) < 0)
+//     {
+//         return ret;
+//     }
+
+//     return 0;
+// }
+
+// void Network::audioSender(char *name)
+// {
+//     // this isnt reopening files not sure why O_TRUNC didnt work either
+//     int fd = open("recordingtest10", O_CREAT | O_WRONLY, 777);
+//     /* The sample type to use */
+//     static const pa_sample_spec ss = {
+//         .format = PA_SAMPLE_S24BE,
+//         .rate = 44100,
+//         .channels = 2};
+//     pa_simple *s = NULL;
+//     int error;
+
+//     /* Create the recording stream */
+//     if (!(s = pa_simple_new(NULL, "ChatClient", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &error)))
+//     {
+//         fprintf(stderr, __FILE__ ": pa_simple_new() failed: %s\n", pa_strerror(error));
+//         goto finish;
+//     }
+
+//     for (;;)
+//     {
+//         uint8_t buf[BUFSIZE + 15];
+
+//         /* Record some data ... */
+//         // this is blocking until size is reached
+//         if (pa_simple_read(s, buf, BUFSIZE, &error) < 0)
+//         {
+//             fprintf(stderr, __FILE__ ": pa_simple_read() failed: %s\n", pa_strerror(error));
+//             goto finish;
+//         }
+//         /* And write it to fd */
+//         if (loop_write(fd, buf, sizeof(buf), name) != -1)
+//         {
+//             fprintf(stderr, __FILE__ ": write() failed: %s\n", strerror(errno));
+//             //goto finish;
+//         }
+//     }
+
+// finish:
+
+//     if (s)
+//         pa_simple_free(s);
+// }
 
 void Network::initSocket(const char *addr, const char *port)
 {

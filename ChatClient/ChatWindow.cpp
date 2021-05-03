@@ -59,7 +59,6 @@ void ChatWindow::insertText(QString txt)
         // when 4+ users connect it starts duping stuff
 
         ui->listWidget->addItem(new QListWidgetItem(txt));
-
         return;
     }
     else if (txt[0] == 'r')

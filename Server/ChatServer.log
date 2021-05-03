@@ -1,0 +1,39 @@
+Send to all: mtest_Test23
+Send to all: mHello_Test23
+Send to all: rTest23
+Server Starting
+Server Started and Listening
+Server Accepted Client
+numConnections: 1
+Received Name for Client: Test23
+Send to all: cTest23
+Send to all: mTest_Test23
+Sent Message: Test_Test23
+Sent Message: w(Whisper To Test23) hi
+Send to all: mexit
+_Test23
+Sent Message: exit
+_Test23
+Send to all: rTest23
+
+
+Server Starting
+Server Started and Listening
+Server Accepted Client
+numConnections: 1
+Received Name for Client: Test23
+Send to all: cTest23
+Send to all: mexit
+_Test23
+Sent Message: exit
+_Test23
+Send to all: rTest23
+Server Accepted Client
+numConnections: 2
+Received Name for Client: Test23
+Send to all: cTest23
+Send to all: mexit
+_Test23
+Sent Message: exit
+_Test23
+Send to all: rTest23
