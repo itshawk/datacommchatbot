@@ -15,7 +15,7 @@ ConnectUi::ConnectUi(QWidget *parent) : QWidget(parent),
 
     //Create the network and add error handling before starting
     network_ = new Network();
-    network_->logAction("\n\nStartup");
+    network_->logAction("Startup");
 
     connect(network_, &Network::error,
             this, &ConnectUi::showErrorLabel);

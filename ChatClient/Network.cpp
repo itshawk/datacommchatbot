@@ -24,7 +24,7 @@ void Network::logAction(const char *loggedAction)
 void Network::Start(const char *addr, const char *port)
 {
     initSocket(addr, port);
-    logptr = fopen("ChatClient.log", "a");
+    //logptr = fopen("ChatClient.log", "a");
 }
 
 void Network::receiver()
