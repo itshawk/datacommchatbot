@@ -10,9 +10,6 @@
 #include <signal.h>
 #include <chrono>
 #include <QObject>
-#include <pulse/simple.h>
-#include <pulse/error.h>
-#include <pulse/gccmacro.h>
 
 class Network : public QObject
 {
@@ -30,7 +27,7 @@ public:
 
 private:
     int sfd;
-    FILE *logptr;
+    FILE *logptr = 0;
     void initSocket(const char *addr, const char *port);
     bool running = false;
     ssize_t loop_write(int fd, const void *data, size_t size, char *name);

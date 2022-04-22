@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'Chatwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.5
+** Created by: Qt User Interface Compiler version 5.12.8
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -10,11 +10,8 @@
 #define UI_CHATWINDOW_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
@@ -37,31 +34,31 @@ public:
     void setupUi(QMainWindow *ChatWindow)
     {
         if (ChatWindow->objectName().isEmpty())
-            ChatWindow->setObjectName(QStringLiteral("ChatWindow"));
+            ChatWindow->setObjectName(QString::fromUtf8("ChatWindow"));
         ChatWindow->resize(400, 300);
         ChatWindow->setTabShape(QTabWidget::Rounded);
         centralWidget = new QWidget(ChatWindow);
-        centralWidget->setObjectName(QStringLiteral("centralWidget"));
+        centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         horizontalLayout = new QHBoxLayout(centralWidget);
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         listWidget = new QListWidget(centralWidget);
-        listWidget->setObjectName(QStringLiteral("listWidget"));
+        listWidget->setObjectName(QString::fromUtf8("listWidget"));
         listWidget->setMaximumSize(QSize(75, 16777215));
 
         horizontalLayout->addWidget(listWidget);
 
         verticalLayout_2 = new QVBoxLayout();
         verticalLayout_2->setSpacing(6);
-        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
+        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         textEdit = new QTextEdit(centralWidget);
-        textEdit->setObjectName(QStringLiteral("textEdit"));
+        textEdit->setObjectName(QString::fromUtf8("textEdit"));
 
         verticalLayout_2->addWidget(textEdit);
 
         lineEdit = new QLineEdit(centralWidget);
-        lineEdit->setObjectName(QStringLiteral("lineEdit"));
+        lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
 
         verticalLayout_2->addWidget(lineEdit);
 
@@ -77,7 +74,7 @@ public:
 
     void retranslateUi(QMainWindow *ChatWindow)
     {
-        ChatWindow->setWindowTitle(QApplication::translate("ChatWindow", "Chat Client", Q_NULLPTR));
+        ChatWindow->setWindowTitle(QApplication::translate("ChatWindow", "Chat Client", nullptr));
     } // retranslateUi
 
 };
